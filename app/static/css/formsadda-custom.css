@@ -766,6 +766,31 @@ h1, h2, h3, h4, h5, h6,
 /* ----------------------------------------------------------
    21. PREMIUM DROPDOWN & SELECTPICKER STYLE OVERRIDES
    ---------------------------------------------------------- */
+/* Stacking Context & Z-Index Elevation when Dropdowns are Open */
+.row:has(.bootstrap-select.show),
+.card:has(.bootstrap-select.show),
+.filter-panel:has(.bootstrap-select.show),
+.form-group:has(.bootstrap-select.show),
+.col-xl-3:has(.bootstrap-select.show),
+.col-xl-4:has(.bootstrap-select.show),
+.col-xl-5:has(.bootstrap-select.show),
+.col-lg-3:has(.bootstrap-select.show),
+.col-lg-4:has(.bootstrap-select.show),
+.col-md-6:has(.bootstrap-select.show) {
+    z-index: 99 !important;
+    position: relative !important;
+}
+
+.bootstrap-select.show {
+    z-index: 1060 !important;
+}
+
+/* Hide Default bootstrap-select Caret */
+.bootstrap-select > .dropdown-toggle .caret,
+.bootstrap-select > .dropdown-toggle .bs-caret {
+    display: none !important;
+}
+
 /* Bootstrap Select Button (The Dropdown Trigger) */
 .bootstrap-select > .dropdown-toggle {
     background-color: #ffffff !important;
@@ -777,11 +802,35 @@ h1, h2, h3, h4, h5, h6,
     color: #1e293b !important;
     box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
 }
+
+/* Add custom FontAwesome Chevron Caret */
+.bootstrap-select > .dropdown-toggle::after {
+    border: none !important;
+    content: "\f078" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-size: 10px !important;
+    color: #64748b !important;
+    transition: transform 0.2s ease !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    display: inline-block !important;
+}
+
+.bootstrap-select.show > .dropdown-toggle::after {
+    transform: rotate(180deg) !important;
+    color: var(--fa-primary) !important;
+}
+
 .bootstrap-select > .dropdown-toggle:hover {
     border-color: #cbd5e1 !important;
     background-color: #f8fafc !important;
 }
+
 .bootstrap-select > .dropdown-toggle:focus,
 .bootstrap-select.show > .dropdown-toggle {
     border-color: var(--fa-primary) !important;
@@ -792,12 +841,12 @@ h1, h2, h3, h4, h5, h6,
 /* Dropdown Menu Wrapper */
 .dropdown-menu {
     border-radius: 14px !important;
-    border: 1px solid rgba(0, 0, 0, 0.06) !important;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12) !important;
     padding: 8px !important;
-    background-color: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(12px) !important;
-    animation: fadeInDropdown 0.2s ease-out !important;
+    background-color: #ffffff !important; /* solid white to block background elements */
+    z-index: 99999 !important;
+    animation: fadeInDropdown 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 @keyframes fadeInDropdown {
@@ -829,6 +878,7 @@ h1, h2, h3, h4, h5, h6,
     background: linear-gradient(135deg, var(--fa-primary), var(--fa-accent)) !important;
     color: #ffffff !important;
 }
+
 .dropdown-menu .dropdown-item:hover *,
 .bootstrap-select .dropdown-menu li a:hover *,
 .bootstrap-select .dropdown-menu li.active a *,
@@ -843,6 +893,7 @@ h1, h2, h3, h4, h5, h6,
     color: #ffffff !important;
     font-weight: 600 !important;
 }
+
 .bootstrap-select .dropdown-menu li.selected a *,
 .dropdown-menu .dropdown-item.active * {
     color: #ffffff !important;
@@ -860,6 +911,7 @@ h1, h2, h3, h4, h5, h6,
     border-bottom: 1px solid #f1f5f9 !important;
     margin-bottom: 8px !important;
 }
+
 .bootstrap-select .bs-searchbox input.form-control {
     border-radius: 8px !important;
     border: 1.5px solid #e2e8f0 !important;
@@ -868,6 +920,7 @@ h1, h2, h3, h4, h5, h6,
     color: #1e293b !important;
     transition: all 0.2s ease !important;
 }
+
 .bootstrap-select .bs-searchbox input.form-control:focus {
     border-color: var(--fa-primary) !important;
     box-shadow: 0 0 0 3px rgba(47, 76, 221, 0.1) !important;
@@ -877,6 +930,7 @@ h1, h2, h3, h4, h5, h6,
 .bootstrap-select .dropdown-menu li a span {
     color: inherit !important;
 }
+
 .bootstrap-select .dropdown-menu li a span.text {
     display: flex !important;
     justify-content: space-between !important;
@@ -884,6 +938,7 @@ h1, h2, h3, h4, h5, h6,
     align-items: center !important;
     color: inherit !important;
 }
+
 .bootstrap-select .dropdown-menu li a span.text small.text-muted {
     background: rgba(0, 0, 0, 0.05);
     color: #64748b !important;
@@ -894,6 +949,7 @@ h1, h2, h3, h4, h5, h6,
     margin-left: 10px;
     transition: all 0.2s;
 }
+
 .bootstrap-select .dropdown-menu li.selected a span.text small.text-muted {
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff !important;

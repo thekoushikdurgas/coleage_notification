@@ -862,14 +862,19 @@ h1, h2, h3, h4, h5, h6,
 }
 
 /* Text alignment & spacing for count badges inside options */
+.bootstrap-select .dropdown-menu li a span {
+    color: inherit !important;
+}
 .bootstrap-select .dropdown-menu li a span.text {
     display: flex !important;
     justify-content: space-between !important;
     width: 100% !important;
     align-items: center !important;
+    color: inherit !important;
 }
 .bootstrap-select .dropdown-menu li a span.text small.text-muted {
     background: rgba(0, 0, 0, 0.05);
+    color: #64748b !important;
     padding: 2px 8px;
     border-radius: 6px;
     font-size: 10px;

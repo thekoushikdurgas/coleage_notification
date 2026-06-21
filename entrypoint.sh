@@ -44,8 +44,8 @@ else
   echo "[2/2] Starting Gunicorn on 0.0.0.0:8000 ..."
   exec gunicorn wsgi:app \
     --bind 0.0.0.0:8000 \
-    --workers "${GUNICORN_WORKERS:-10}" \
-    --threads "${GUNICORN_THREADS:-20}" \
+    --workers "${GUNICORN_WORKERS:-5}" \
+    --threads "${GUNICORN_THREADS:-10}" \
     --timeout "${GUNICORN_TIMEOUT:-120}" \
     --log-level "${GUNICORN_LOG_LEVEL:-info}" \
     --access-logfile - \

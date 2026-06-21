@@ -48,8 +48,8 @@ docker compose down -v
 # Rebuild only the web image
 docker compose build web && docker compose up web
 
-
-docker compose restart web
+git pull
+sudo docker compose restart web
 
 
 git init

@@ -1,5 +1,11 @@
 venv\Scripts\python.exe run.py
 
+
+
+python run.py
+
+pip install -r requirements.txt
+
 # 1. Build the Docker image
 
 docker build -t formsadda:latest .
@@ -30,35 +36,32 @@ docker compose up -d
 docker compose -f docker-compose.prod.yml up -d
 curl <http://localhost/>                # Via Nginx on port 80
 
-
-
 cp .env.example .env          # fill in your SECRET_KEY + POSTGRES_PASSWORD
 docker compose up --build     # builds image, starts Postgres, auto-seeds DB
 
-
 # View live logs
+
 docker compose logs -f
 
 # Stop containers (data preserved)
+
 docker compose down
 
 # Wipe the database volume completely
+
 docker compose down -v
 
 # Rebuild only the web image
+
 docker compose build web && docker compose up web
 
-
-
 cd coleage_notification
-
 
 git pull
 sudo docker compose restart web
 
-
 git init
-git remote add origin https://github.com/thekoushikdurgas/coleage_notification.git
+git remote add origin <https://github.com/thekoushikdurgas/coleage_notification.git>
 git branch -M main
 git add .
 git commit -m "coleage_notification deployment v1"

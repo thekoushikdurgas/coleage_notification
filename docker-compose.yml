@@ -1,0 +1,68 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FormsADDA – Docker Compose (local testing)
+#
+#  Start:   docker compose up --build
+#  Rebuild: docker compose up --build --force-recreate
+#  Logs:    docker compose logs -f
+#  Stop:    docker compose down
+#  Wipe DB: docker compose down -v        ← destroys postgres_data volume
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── PostgreSQL database ────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: formsadda_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB:-formsadda}
+      POSTGRES_USER:     ${POSTGRES_USER:-formsadda}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-formsadda_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"          # optional – expose on host for local psql / DBeaver
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-formsadda}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Flask / Gunicorn application ───────────────────────────────────────────
+  web:
+    build: .
+    container_name: formsadda_web
+    restart: unless-stopped
+    env_file: .env          # copy .env.example → .env and customise
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-formsadda}:${POSTGRES_PASSWORD:-formsadda_secret}@db:5432/${POSTGRES_DB:-formsadda}"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"          # Nginx on the host proxies to this port
+    volumes:
+      - ./inputs:/app/inputs:ro   # seed Excel files (read-only inside container)
+
+  # ── One-time Database Seeder (runs only via profile 'seed') ──────────────────
+  seeder:
+    build: .
+    container_name: formsadda_seeder
+    profiles:
+      - seed
+    command: python seed.py
+    env_file: .env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-formsadda}:${POSTGRES_PASSWORD:-formsadda_secret}@db:5432/${POSTGRES_DB:-formsadda}"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./inputs:/app/inputs:ro   # seed Excel files
+
+volumes:
+  postgres_data:
+

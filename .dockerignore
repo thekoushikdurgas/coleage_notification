@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+
+# SQLite (don't bundle DB into image; use volume or Postgres instead)
+*.db
+*.db-journal
+*.sqlite3
+
+# Environment secrets
+.env
+
+# Docker build context noise
+Dockerfile
+docker-compose*.yml
+
+# Logs
+*.log

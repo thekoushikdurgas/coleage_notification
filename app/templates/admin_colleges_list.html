@@ -1,0 +1,474 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Colleges | FormsADDA Admin{% endblock %}
+
+{% block content %}
+<div class="form-head d-flex mb-3 align-items-start flex-column flex-md-row">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">Institution Registry Management</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-0" style="font-size:12px;">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.admin_dashboard') }}" style="color:#2f4cdd;font-weight:600;"><i class="fa fa-gauge-high mr-1"></i>Dashboard</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Registry</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <a href="{{ url_for('main.admin_college_create') }}" class="btn btn-primary" style="border-radius: 10px; font-weight: 600;"><i class="fa fa-plus-circle mr-1"></i> Register New Organization</a>
+    </div>
+</div>
+
+<!-- Category Switcher Pills -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card mb-0">
+            <div class="card-body py-2">
+                <ul class="nav nav-pills custom-nav-pills">
+                    <li class="nav-item mr-2">
+                        <a href="{{ url_for('main.admin_colleges', category='college') }}" class="nav-link {% if selected_category == 'college' %}active bg-primary text-white{% endif %} py-2 px-3">
+                            <i class="fa fa-university mr-2"></i> Colleges
+                        </a>
+                    </li>
+                    <li class="nav-item mr-2">
+                        <a href="{{ url_for('main.admin_colleges', category='standalone') }}" class="nav-link {% if selected_category == 'standalone' %}active bg-primary text-white{% endif %} py-2 px-3">
+                            <i class="fa fa-school mr-2"></i> Standalones
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ url_for('main.admin_colleges', category='university') }}" class="nav-link {% if selected_category == 'university' %}active bg-primary text-white{% endif %} py-2 px-3">
+                            <i class="fa fa-graduation-cap mr-2"></i> Universities
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filtering Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form action="{{ url_for('main.admin_colleges') }}" method="GET" class="row align-items-end">
+                    <input type="hidden" name="category" value="{{ selected_category }}">
+                    
+                    <div class="{% if selected_category == 'university' %}col-xl-7 col-lg-7{% else %}col-xl-5 col-lg-5{% endif %} col-md-12 mb-3 mb-lg-0">
+                        <label class="text-black font-weight-bold" style="font-size:12px;"><i class="fa fa-search text-primary mr-1"></i> Search Registry</label>
+                        <input type="text" name="q" class="form-control" value="{{ search_query or '' }}" placeholder="Search by name, AISHE code, or affiliation...">
+                    </div>
+                    
+                    <div class="{% if selected_category == 'university' %}col-xl-4 col-lg-4{% else %}col-xl-3 col-lg-3{% endif %} col-md-6 mb-3 mb-lg-0">
+                        <label class="text-black font-weight-bold" style="font-size:12px;"><i class="fa fa-map-marker text-primary mr-1"></i> State</label>
+                        <select name="state" class="form-control default-select" data-live-search="true" onchange="this.form.submit()">
+                            <option value="">All States</option>
+                            {% for state in states %}
+                                <option value="{{ state }}" {% if selected_state == state %}selected{% endif %}>{{ state }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if selected_category != 'university' %}
+                    <div class="col-xl-3 col-lg-3 col-md-6 mb-3 mb-lg-0">
+                        <label class="text-black font-weight-bold" style="font-size:12px;"><i class="fa fa-tag text-primary mr-1"></i> {% if selected_category == 'college' %}College Type{% else %}Standalone Type{% endif %}</label>
+                        <select name="type" class="form-control default-select" data-live-search="true" onchange="this.form.submit()">
+                            <option value="">All Types</option>
+                            {% for type in types %}
+                                <option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>{{ type }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-xl-1 col-lg-1 col-md-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-filter"></i></button>
+                        <a href="{{ url_for('main.admin_colleges', category=selected_category) }}" class="btn btn-secondary ml-1"><i class="fa fa-undo"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table List Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Registered {{ selected_category.capitalize() }}s (Page {{ pagination.page }} of {{ pagination.pages or 1 }})</h4>
+                <span class="badge badge-primary">{{ pagination.total }} Total {{ selected_category.capitalize() }}s</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-responsive-md table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; vertical-align: middle;">
+                                    <div class="custom-control custom-checkbox checkbox-success">
+                                        <input type="checkbox" class="custom-control-input" id="checkAll">
+                                        <label class="custom-control-label" for="checkAll"></label>
+                                    </div>
+                                </th>
+                                <th><strong>AISHE Code</strong></th>
+                                <th><strong>Name</strong></th>
+                                {% if selected_category == 'college' %}
+                                    <th><strong>University Affiliation</strong></th>
+                                {% elif selected_category == 'standalone' %}
+                                    <th><strong>Standalone Type</strong></th>
+                                {% else %}
+                                    <th><strong>Official Website</strong></th>
+                                {% endif %}
+                                <th><strong>Location</strong></th>
+                                {% if selected_category != 'university' %}
+                                    <th><strong>Management</strong></th>
+                                {% else %}
+                                    <th><strong>Established</strong></th>
+                                {% endif %}
+                                <th><strong>Actions</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for col in colleges %}
+                                <tr data-id="{{ col.id }}">
+                                    <td>
+                                        <div class="custom-control custom-checkbox checkbox-success">
+                                            <input type="checkbox" class="custom-control-input row-checkbox" id="check_{{ col.id }}" value="{{ col.id }}">
+                                            <label class="custom-control-label" for="check_{{ col.id }}"></label>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge-light" style="font-family: monospace;">{{ col.aishe_code }}</span></td>
+                                    <td style="max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;" title="{{ col.name }}">
+                                        {{ col.name }}
+                                    </td>
+                                    {% if selected_category == 'college' %}
+                                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ col.university_name or 'N/A' }}">
+                                            {{ col.university_name or 'N/A' }}
+                                        </td>
+                                    {% elif selected_category == 'standalone' %}
+                                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ col.college_type or 'N/A' }}">
+                                            {{ col.college_type or 'N/A' }}
+                                        </td>
+                                    {% else %}
+                                        <td style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {% if col.website %}
+                                                <a href="{{ col.website }}" target="_blank" class="text-primary small" style="text-decoration: underline;">{{ col.website }}</a>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                    {% endif %}
+                                    <td>
+                                        <div style="font-size:12px;">{{ col.district or 'N/A' }}, <strong>{{ col.state or 'N/A' }}</strong></div>
+                                        <small class="text-muted" style="font-size:10px;">{{ col.location_type or 'N/A' }} area</small>
+                                    </td>
+                                    {% if selected_category != 'university' %}
+                                        <td>
+                                            <div style="font-size:12px;">{{ col.college_type or 'N/A' if selected_category == 'college' else 'Standalone' }}</div>
+                                            <small class="text-muted" style="font-size:10px;">{{ col.management or 'N/A' }}</small>
+                                        </td>
+                                    {% else %}
+                                        <td>{{ col.year_of_establishment or 'N/A' }}</td>
+                                    {% endif %}
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <a href="{{ url_for('main.admin_college_edit', org_id=col.id) }}" class="btn btn-warning btn-xs sharp mr-2"><i class="fa fa-pencil"></i></a>
+                                            
+                                            <form action="{{ url_for('main.admin_college_delete', org_id=col.id) }}" method="POST" style="display: inline-block;">
+                                                <button type="submit" class="btn btn-danger btn-xs sharp" onclick="return confirm('WARNING: Are you sure you want to permanently delete this college? This will delete all associated notifications, crawl logs, and subscriptions. This action cannot be undone!')">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">No {{ selected_category }}s match the filters or search query.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination Controls -->
+                {% if pagination.pages > 1 %}
+                    <div class="d-flex justify-content-between align-items-center flex-wrap mt-4 border-top pt-3">
+                        <span class="text-muted" style="font-size:12px;">
+                            Showing items {{ (pagination.page - 1) * 50 + 1 }} to {{ min(pagination.page * 50, pagination.total) }} of {{ pagination.total }}
+                        </span>
+                        <nav aria-label="Colleges navigation">
+                            <ul class="pagination pagination-gutter pagination-primary no-bg mb-0">
+                                <!-- Previous Button -->
+                                <li class="page-item page-indicator {% if not pagination.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="{% if pagination.has_prev %}{{ url_for('main.admin_colleges', page=pagination.prev_num, q=search_query, state=selected_state, type=selected_type, category=selected_category) }}{% else %}#{% endif %}">
+                                        <i class="la la-angle-left"></i>
+                                    </a>
+                                </li>
+                                
+                                <!-- Page Numbers (Show window of pages) -->
+                                {% set start_page = max(1, pagination.page - 3) %}
+                                {% set end_page = min(pagination.pages, pagination.page + 3) %}
+                                
+                                {% if start_page > 1 %}
+                                    <li class="page-item"><a class="page-link" href="{{ url_for('main.admin_colleges', page=1, q=search_query, state=selected_state, type=selected_type, category=selected_category) }}">1</a></li>
+                                    {% if start_page > 2 %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+                                {% endif %}
+                                
+                                {% for p in range(start_page, end_page + 1) %}
+                                    <li class="page-item {% if pagination.page == p %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('main.admin_colleges', page=p, q=search_query, state=selected_state, type=selected_type, category=selected_category) }}">{{ p }}</a>
+                                    </li>
+                                {% endfor %}
+                                
+                                {% if end_page < pagination.pages %}
+                                    {% if end_page < pagination.pages - 1 %}<li class="page-item disabled"><span class="page-link">...</span></li>{% endif %}
+                                    <li class="page-item"><a class="page-link" href="{{ url_for('main.admin_colleges', page=pagination.pages, q=search_query, state=selected_state, type=selected_type, category=selected_category) }}">{{ pagination.pages }}</a></li>
+                                {% endif %}
+                                
+                                <!-- Next Button -->
+                                <li class="page-item page-indicator {% if not pagination.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="{% if pagination.has_next %}{{ url_for('main.admin_colleges', page=pagination.next_num, q=search_query, state=selected_state, type=selected_type, category=selected_category) }}{% else %}#{% endif %}">
+                                        <i class="la la-angle-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Bulk Toolbar -->
+<div id="bulkToolbar" class="card shadow-lg bg-dark text-white border-0 py-3 px-4" style="position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 1050; border-radius: 12px; display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap">
+        <div class="d-flex align-items-center mb-2 mb-md-0">
+            <span class="badge badge-success mr-3" id="bulkCountBadge" style="font-size: 14px; padding: 6px 12px;">0 Selected</span>
+            <h5 class="text-white mb-0" style="font-size: 15px;">Bulk Operations</h5>
+        </div>
+        <div class="d-flex gap-2">
+            <button id="btnBulkScrape" class="btn btn-success btn-sm font-weight-bold mr-2">
+                <i class="fa fa-spider"></i> Scrape Selected
+            </button>
+            <button id="btnCreateTask" class="btn btn-primary btn-sm font-weight-bold mr-2">
+                <i class="fa fa-clock"></i> Create Scheduled Task
+            </button>
+            <button id="btnClearSelection" class="btn btn-outline-light btn-sm">
+                Clear Selection
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Progress / Console Modal -->
+<div class="modal fade" id="bulkLogsModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content bg-black text-white" style="border: 1px solid #444; border-radius: 12px; background-color: #111 !important;">
+            <div class="modal-header border-bottom-0 pb-0 d-flex justify-content-between align-items-center">
+                <h5 class="modal-title text-white"><i class="fa fa-terminal text-success mr-2"></i> Bulk Crawler Process</h5>
+                <button type="button" class="close text-white" id="btnCloseModal" data-dismiss="modal" aria-label="Close" style="display: none;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-light small">Simulated parallel crawler threads outputting logs...</p>
+                <div class="p-3 bg-dark rounded text-success" id="bulkLogsContainer" style="font-family: monospace; font-size: 13px; height: 350px; overflow-y: auto; border: 1px solid #333; line-height: 1.6; background-color: #050505 !important;">
+                    <div class="log-line text-warning">[SYSTEM] Initiating bulk crawler thread...</div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" id="btnConfirmClose" data-dismiss="modal" style="display: none;">Close Console</button>
+                <div id="bulkSpinner" class="spinner-border text-success spinner-border-sm" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const checkAll = document.getElementById("checkAll");
+    const rowCheckboxes = document.querySelectorAll(".row-checkbox");
+    const bulkToolbar = document.getElementById("bulkToolbar");
+    const bulkCountBadge = document.getElementById("bulkCountBadge");
+    const btnClearSelection = document.getElementById("btnClearSelection");
+    const btnBulkScrape = document.getElementById("btnBulkScrape");
+    const btnCreateTask = document.getElementById("btnCreateTask");
+    
+    // Load existing selection from sessionStorage
+    let selectedIds = new Set();
+    const storedIds = sessionStorage.getItem("selected_college_ids");
+    if (storedIds) {
+        storedIds.split(",").forEach(id => {
+            if (id.trim()) selectedIds.add(parseInt(id));
+        });
+    }
+    
+    // Sync checkboxes with stored selection
+    function syncCheckboxes() {
+        let allChecked = rowCheckboxes.length > 0;
+        rowCheckboxes.forEach(cb => {
+            const id = parseInt(cb.value);
+            if (selectedIds.has(id)) {
+                cb.checked = true;
+            } else {
+                cb.checked = false;
+                allChecked = false;
+            }
+        });
+        if (rowCheckboxes.length > 0) {
+            checkAll.checked = allChecked;
+        }
+        updateToolbar();
+    }
+    
+    // Update bulk toolbar visibility and text
+    function updateToolbar() {
+        if (selectedIds.size > 0) {
+            bulkCountBadge.textContent = selectedIds.size + " Selected";
+            bulkToolbar.style.display = "block";
+        } else {
+            bulkToolbar.style.display = "none";
+        }
+    }
+    
+    // Save current selection to sessionStorage
+    function saveSelection() {
+        sessionStorage.setItem("selected_college_ids", Array.from(selectedIds).join(","));
+    }
+    
+    // Handlers for checkboxes
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener("change", function() {
+            const id = parseInt(this.value);
+            if (this.checked) {
+                selectedIds.add(id);
+            } else {
+                selectedIds.delete(id);
+            }
+            saveSelection();
+            syncCheckboxes();
+        });
+    });
+    
+    // Master checkbox handler
+    checkAll.addEventListener("change", function() {
+        rowCheckboxes.forEach(cb => {
+            const id = parseInt(cb.value);
+            cb.checked = this.checked;
+            if (this.checked) {
+                selectedIds.add(id);
+            } else {
+                selectedIds.delete(id);
+            }
+        });
+        saveSelection();
+        updateToolbar();
+    });
+    
+    // Clear selection
+    btnClearSelection.addEventListener("click", function() {
+        selectedIds.clear();
+        saveSelection();
+        syncCheckboxes();
+    });
+    
+    // Initial sync
+    syncCheckboxes();
+    
+    // Create crawling task redirect
+    btnCreateTask.addEventListener("click", function() {
+        if (selectedIds.size === 0) return;
+        const ids = Array.from(selectedIds).join(",");
+        window.location.href = "{{ url_for('main.admin_tasks') }}?selected_ids=" + ids;
+    });
+    
+    // Bulk scraping operations
+    btnBulkScrape.addEventListener("click", function() {
+        if (selectedIds.size === 0) return;
+        
+        // Setup Modal state
+        const logsContainer = document.getElementById("bulkLogsContainer");
+        const bulkSpinner = document.getElementById("bulkSpinner");
+        const btnCloseModal = document.getElementById("btnCloseModal");
+        const btnConfirmClose = document.getElementById("btnConfirmClose");
+        
+        logsContainer.innerHTML = '<div class="text-warning">[SYSTEM] Preparing crawler queue for ' + selectedIds.size + ' organizations...</div>';
+        bulkSpinner.style.display = "inline-block";
+        btnCloseModal.style.display = "none";
+        btnConfirmClose.style.display = "none";
+        
+        // Show modal
+        $('#bulkLogsModal').modal('show');
+        
+        // Execute AJAX call
+        fetch("{{ url_for('main.bulk_scrape_colleges') }}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ids: Array.from(selectedIds) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                logsContainer.innerHTML += '<div class="text-success">[SYSTEM] Crawl requests queued in background. Subscribing to live updates...</div>';
+                
+                // Open SSE listener for the duration of the crawl
+                const modalSSE = new EventSource('/admin/stream-events');
+                
+                modalSSE.addEventListener('log', function(event) {
+                    const logData = JSON.parse(event.data);
+                    let colorClass = "text-light";
+                    if (logData.log_type === 'success') {
+                        colorClass = "text-success font-weight-bold";
+                    } else if (logData.log_type === 'error') {
+                        colorClass = "text-danger";
+                    } else if (logData.log_type === 'system') {
+                        colorClass = "text-warning";
+                    } else if (logData.log_type === 'info') {
+                        colorClass = "text-info";
+                    }
+                    logsContainer.innerHTML += '<div class="' + colorClass + '">' + logData.message + '</div>';
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                });
+                
+                modalSSE.addEventListener('status', function(event) {
+                    const status = JSON.parse(event.data);
+                    
+                    // If queue is empty and workers are idle, we are finished!
+                    if (status.total_backlog === 0 && status.scraper.status === 'Idle' && status.loader.status === 'Idle') {
+                        modalSSE.close();
+                        bulkSpinner.style.display = "none";
+                        btnCloseModal.style.display = "block";
+                        btnConfirmClose.style.display = "inline-block";
+                        logsContainer.innerHTML += '<div class="text-success font-weight-bold mt-2">[SYSTEM] All background crawl jobs completed.</div>';
+                    }
+                });
+                
+                // Clear selection
+                selectedIds.clear();
+                saveSelection();
+                syncCheckboxes();
+            } else {
+                bulkSpinner.style.display = "none";
+                btnCloseModal.style.display = "block";
+                btnConfirmClose.style.display = "inline-block";
+                logsContainer.innerHTML += '<div class="text-danger">[ERROR] ' + (data.message || 'Operation failed.') + '</div>';
+            }
+        })
+        .catch(error => {
+            bulkSpinner.style.display = "none";
+            btnCloseModal.style.display = "block";
+            btnConfirmClose.style.display = "inline-block";
+            logsContainer.innerHTML += '<div class="text-danger">[FATAL ERROR] ' + error.message + '</div>';
+        });
+    });
+});
+</script>
+{% endblock %}

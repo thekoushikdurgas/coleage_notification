@@ -1,0 +1,263 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if college %}Edit College Details | {{ college.name }}{% else %}Register New College | FormsADDA{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10 col-md-12">
+        <!-- Breadcrumb & Header -->
+        <div class="mb-4">
+            <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">
+                {% if college %}Edit College Details{% else %}Register New College{% endif %}
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent p-0 mb-0" style="font-size:12px;">
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.admin_dashboard') }}" style="color:#2f4cdd;font-weight:600;"><i class="fa fa-gauge-high mr-1"></i>Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('main.admin_colleges') }}" style="color:#2f4cdd;font-weight:600;">Registry</a></li>
+                    <li class="breadcrumb-item active text-muted" aria-current="page">{% if college %}Edit{% else %}Register{% endif %}</li>
+                </ol>
+            </nav>
+        </div>
+
+        <div class="card" style="border-radius: 16px !important;">
+            <div class="card-header border-0 pb-0 pt-4">
+                <h4 class="card-title" style="font-family:'Outfit',sans-serif;">
+                    {% if college %}
+                        <i class="fa fa-edit text-warning mr-2"></i> Update Organization Profile
+                    {% else %}
+                        <i class="fa fa-plus-circle text-primary mr-2"></i> Organization Registration Wizard
+                    {% endif %}
+                </h4>
+            </div>
+            
+            <div class="card-body px-4 px-md-5 pb-5">
+                <!-- Form Wizard Progress Steps -->
+                <div class="row mb-5 mt-2">
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="d-flex align-items-center" style="gap:20px;">
+                            <div id="step-indicator-1" class="d-flex align-items-center" style="gap:8px;">
+                                <span class="step-pill" id="step-badge-1">1</span>
+                                <span class="text-black font-weight-bold" style="font-size:13px;" id="step-label-1">Basic Profile</span>
+                            </div>
+                            <div style="width:40px; height:2px; background:#e5e7eb;" id="step-line"></div>
+                            <div id="step-indicator-2" class="d-flex align-items-center" style="opacity: 0.5; gap:8px;">
+                                <span class="step-pill bg-secondary" id="step-badge-2">2</span>
+                                <span class="text-muted" style="font-size:13px;" id="step-label-2">Location & Classification</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{% if college %}{{ url_for('main.admin_college_edit', org_id=college.id) }}{% else %}{{ url_for('main.admin_college_create') }}{% endif %}" method="POST">
+                    
+                    <!-- STEP 1 FIELDS -->
+                    <div id="step-1-fields" class="fade-in">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">Institution Category <span class="text-danger">*</span></label>
+                                <select name="category" id="categorySelect" class="form-control default-select" {% if college %}disabled{% endif %}>
+                                    <option value="college" {% if college and college.category == 'college' %}selected{% endif %}{% if not college %}selected{% endif %}>College</option>
+                                    <option value="standalone" {% if college and college.category == 'standalone' %}selected{% endif %}>Standalone</option>
+                                    <option value="university" {% if college and college.category == 'university' %}selected{% endif %}>University</option>
+                                </select>
+                                {% if college %}
+                                    <input type="hidden" name="category" value="{{ college.category }}">
+                                    <small class="text-muted" style="font-size: 11px;">Category cannot be changed after registration.</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">Organization Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" value="{{ college.name if college else '' }}" required placeholder="e.g. INDIAN INSTITUTE OF TECHNOLOGY, DELHI" style="border-radius: 10px;">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">AISHE Code</label>
+                                <input type="text" name="aishe_code" class="form-control" value="{{ college.aishe_code if college else '' }}" placeholder="e.g. C-12345" {% if college %}readonly style="background-color: #f8f9fa; border-radius: 10px;"{% else %}style="border-radius: 10px;"{% endif %}>
+                                {% if not college %}
+                                    <small class="text-muted" style="font-size: 11px;">Leave empty to auto-generate a temporary ID.</small>
+                                {% else %}
+                                    <small class="text-muted" style="font-size: 11px;">AISHE Code cannot be modified once registered.</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">Official Website</label>
+                                <input type="url" name="website" class="form-control" value="{{ college.website if college else '' }}" placeholder="e.g. https://www.iitd.ac.in" style="border-radius: 10px;">
+                                
+                                <div class="mt-2 url-preview-strip" id="url-preview-container" style="display: none;">
+                                    <i class="fa fa-link mr-1"></i> <span id="url-preview-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- STEP 2 FIELDS -->
+                    <div id="step-2-fields" style="display: none;" class="fade-in">
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">State</label>
+                                <select name="state" class="form-control default-select" data-live-search="true">
+                                    <option value="">Select State</option>
+                                    {% for state in states %}
+                                        <option value="{{ state }}" {% if college and college.state == state %}selected{% endif %}>{{ state }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">District</label>
+                                <input type="text" name="district" class="form-control" value="{{ college.district if college else '' }}" placeholder="e.g. South Delhi" style="border-radius: 10px;">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div id="typeFieldGroup" class="col-md-6 form-group">
+                                <label id="typeLabel" class="text-black font-weight-bold" style="font-size: 13px;">College Type</label>
+                                <input type="text" name="college_type" class="form-control" value="{{ college.college_type if college else 'Affiliated College' }}" placeholder="e.g. Affiliated College / Autonomous College" style="border-radius: 10px;">
+                            </div>
+                            
+                            <div id="managementFieldGroup" class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">Management</label>
+                                <input type="text" name="management" class="form-control" value="{{ college.management if college else 'Private Un-Aided' }}" placeholder="e.g. Government / Private Un-Aided" style="border-radius: 10px;">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div id="universityFieldGroup" class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">University Affiliation</label>
+                                <input type="text" name="university_name" class="form-control" value="{{ college.university_name if college else '' }}" placeholder="e.g. Delhi University" style="border-radius: 10px;">
+                            </div>
+                            
+                            <div class="col-md-6 form-group">
+                                <label class="text-black font-weight-bold" style="font-size: 13px;">Location Zone</label>
+                                <select name="location_type" class="form-control default-select">
+                                    <option value="Urban" {% if college and college.location_type == 'Urban' %}selected{% endif %}>Urban</option>
+                                    <option value="Rural" {% if college and college.location_type == 'Rural' %}selected{% endif %}>Rural</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Wizard Buttons Row -->
+                    <div class="d-flex justify-content-between border-top pt-3 mt-4">
+                        <button type="button" class="btn btn-light border" id="btn-prev" style="display: none; border-radius: 10px; font-weight:600;" onclick="showStep(1)">
+                            <i class="fa fa-chevron-left mr-1"></i> Back
+                        </button>
+                        <a href="{{ url_for('main.admin_colleges', category=college.category if college else 'college') }}" class="btn btn-light border" id="btn-cancel" style="border-radius: 10px; font-weight:600;">Cancel</a>
+                        
+                        <div class="ml-auto">
+                            <button type="button" class="btn btn-primary" id="btn-next" style="border-radius: 10px; font-weight:600;" onclick="showStep(2)">
+                                Next <i class="fa fa-chevron-right ml-1"></i>
+                            </button>
+                            <button type="submit" class="btn btn-success" id="btn-submit" style="display: none; border-radius: 10px; font-weight:600;">
+                                <i class="fa fa-save mr-1"></i> Save Details
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentStep = 1;
+
+    function showStep(step) {
+        const step1 = document.getElementById('step-1-fields');
+        const step2 = document.getElementById('step-2-fields');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const btnSubmit = document.getElementById('btn-submit');
+        const badge2 = document.getElementById('step-badge-2');
+        const label2 = document.getElementById('step-label-2');
+        const indicator2 = document.getElementById('step-indicator-2');
+        
+        if (step === 1) {
+            step1.style.display = 'block';
+            step2.style.display = 'none';
+            btnPrev.style.display = 'none';
+            btnNext.style.display = 'inline-block';
+            btnSubmit.style.display = 'none';
+            
+            indicator2.style.opacity = '0.5';
+            badge2.classList.remove('bg-primary');
+            badge2.classList.add('bg-secondary');
+            label2.classList.remove('text-black', 'font-weight-bold');
+            label2.classList.add('text-muted');
+            currentStep = 1;
+        } else {
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+            btnPrev.style.display = 'inline-block';
+            btnNext.style.display = 'none';
+            btnSubmit.style.display = 'inline-block';
+            
+            indicator2.style.opacity = '1';
+            badge2.classList.remove('bg-secondary');
+            badge2.classList.add('bg-primary');
+            label2.classList.remove('text-muted');
+            label2.classList.add('text-black', 'font-weight-bold');
+            currentStep = 2;
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const categorySelect = document.getElementById("categorySelect");
+        const typeFieldGroup = document.getElementById("typeFieldGroup");
+        const typeLabel = document.getElementById("typeLabel");
+        const typeInput = typeFieldGroup.querySelector("input");
+        const managementFieldGroup = document.getElementById("managementFieldGroup");
+        const universityFieldGroup = document.getElementById("universityFieldGroup");
+        
+        function toggleCategoryFields() {
+            const category = categorySelect.value;
+            if (category === 'college') {
+                typeFieldGroup.style.display = 'block';
+                typeLabel.textContent = "College Type";
+                typeInput.placeholder = "e.g. Affiliated College / Autonomous College";
+                managementFieldGroup.style.display = 'block';
+                universityFieldGroup.style.display = 'block';
+            } else if (category === 'standalone') {
+                typeFieldGroup.style.display = 'block';
+                typeLabel.textContent = "Standalone Type";
+                typeInput.placeholder = "e.g. Teacher Training / Management Institute";
+                managementFieldGroup.style.display = 'block';
+                universityFieldGroup.style.display = 'none';
+            } else if (category === 'university') {
+                typeFieldGroup.style.display = 'none';
+                managementFieldGroup.style.display = 'none';
+                universityFieldGroup.style.display = 'none';
+            }
+        }
+        
+        categorySelect.addEventListener("change", toggleCategoryFields);
+        toggleCategoryFields(); // initial run
+        
+        // URL Preview Logic
+        const websiteInput = document.querySelector('input[name="website"]');
+        const previewContainer = document.getElementById('url-preview-container');
+        const previewText = document.getElementById('url-preview-text');
+
+        function updateUrlPreview() {
+            const val = websiteInput.value.trim();
+            if (val) {
+                previewContainer.style.display = 'block';
+                previewText.textContent = val;
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        }
+
+        websiteInput.addEventListener('input', updateUrlPreview);
+        updateUrlPreview(); // initial call
+    });
+</script>
+{% endblock %}

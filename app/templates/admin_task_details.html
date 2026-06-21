@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+
+{% block title %}Task Analysis - {{ task.name }} | FormsADDA Admin{% endblock %}
+
+{% block content %}
+<div class="form-head d-flex mb-3 align-items-start flex-column flex-md-row">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">Task Analysis Dashboard</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-0" style="font-size:12px;">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.admin_dashboard') }}" style="color:#2f4cdd;font-weight:600;"><i class="fa fa-gauge-high mr-1"></i>Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.admin_tasks') }}" style="color:#2f4cdd;font-weight:600;">Scheduler</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Analysis</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <a href="{{ url_for('main.admin_tasks') }}" class="btn btn-light border btn-sm" style="border-radius:8px; font-weight:600;"><i class="fa fa-arrow-left mr-1"></i> Back to Scheduler</a>
+    </div>
+</div>
+
+{% if selected_run_id %}
+<div class="alert alert-info d-flex align-items-center justify-content-between mb-4 mt-2">
+    <div>
+        <i class="fa fa-filter mr-2"></i>
+        Viewing execution details for <strong>Run #{{ selected_run_id }}</strong> 
+        (Started: {{ selected_run.started_at.strftime('%d %b %Y, %H:%M:%S') }}, 
+         Trigger: {{ selected_run.trigger_type }}, 
+         Status: <span class="badge badge-{% if selected_run.status == 'Completed' %}success{% elif selected_run.status == 'Failed' %}danger{% else %}warning{% endif %} badge-xs">{{ selected_run.status }}</span>)
+    </div>
+    <a href="{{ url_for('main.admin_task_details', task_id=task.id) }}" class="btn btn-primary btn-sm"><i class="fa fa-times-circle mr-1"></i> Show All Runs</a>
+</div>
+{% endif %}
+
+<!-- Task Overview Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-xl-3 col-lg-3 col-md-6 border-right mb-3 mb-lg-0">
+                        <small class="text-muted font-weight-bold uppercase" style="font-size:10px; letter-spacing:1px;">Scheduler Configuration</small>
+                        <h4 class="text-black font-weight-bold mt-1 mb-0">{{ task.name }}</h4>
+                        <div class="mt-2">
+                            {% if task.status == 'Active' %}
+                                <span class="badge badge-success"><i class="fa fa-dot-circle mr-1"></i> Active</span>
+                            {% else %}
+                                <span class="badge badge-warning"><i class="fa fa-pause-circle mr-1"></i> Paused</span>
+                            {% endif %}
+                            <span class="badge badge-outline-secondary ml-1">
+                                Every 
+                                {% if task.frequency.endswith('s') %}
+                                    {{ task.frequency[:-1] }}s
+                                {% elif task.frequency.endswith('m') %}
+                                    {{ task.frequency[:-1] }}m
+                                {% elif task.frequency.endswith('h') %}
+                                    {{ task.frequency[:-1] }}h
+                                {% elif task.frequency.endswith('d') %}
+                                    {{ task.frequency[:-1] }}d
+                                {% else %}
+                                    {{ task.frequency }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-3 col-md-6 border-right mb-3 mb-lg-0 pl-lg-4">
+                        <small class="text-muted font-weight-bold" style="font-size:10px; letter-spacing:1px;">Target Selection</small>
+                        <div class="mt-1 text-black font-weight-bold">
+                            {% if task.target_type == 'all' %}
+                                All Tracked Organizations
+                            {% elif task.target_type == 'state' %}
+                                All Organizations in {{ task.target_query }}
+                            {% else %}
+                                Selected Registry Organizations
+                            {% endif %}
+                        </div>
+                        <small class="text-primary font-w500">{{ target_count }} organizations covered</small>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-3 col-md-6 border-right mb-3 mb-lg-0 pl-lg-4">
+                        <small class="text-muted font-weight-bold" style="font-size:10px; letter-spacing:1px;">Scheduled Runs</small>
+                        <div class="mt-1 text-black font-weight-bold">
+                            Last Run: 
+                            <span class="text-muted" style="font-weight: 500;">
+                                {{ task.last_run_at.strftime('%d %b %Y | %H:%M') if task.last_run_at else 'Never' }}
+                            </span>
+                        </div>
+                        <small class="text-muted">
+                            Next Run: {{ task.next_run_at.strftime('%d %b %Y | %H:%M') if task.next_run_at else 'N/A' }}
+                        </small>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-3 col-md-6 pl-lg-4">
+                        <small class="text-muted font-weight-bold" style="font-size:10px; letter-spacing:1px;">Task Age</small>
+                        <div class="mt-1 text-black font-weight-bold">
+                            Created on: 
+                            <span class="text-muted" style="font-weight: 500;">
+                                {{ task.created_at.strftime('%d %b %Y') }}
+                            </span>
+                        </div>
+                        <small class="text-muted">Task ID: #{{ task.id }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Metrics Cards Row -->
+<div class="row">
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Crawl Success Rate</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ success_rate }}%</h3>
+                        <div class="progress" style="height: 6px; border-radius: 3px;">
+                            <div class="progress-bar bg-success" style="width: {{ success_rate }}%;" role="progressbar" aria-valuenow="{{ success_rate }}" aria-valuemin="0" aria-valuemax="100" aria-label="Crawl success rate: {{ success_rate }}%">
+                                <span class="sr-only">{{ success_rate }}% Success</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="p-3 rounded bg-success-light">
+                        <i class="la la-percentage text-success" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Total Pages Checked</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ total_crawls }}</h3>
+                        <small class="text-muted">{{ success_crawls }} success / {{ failed_crawls }} failed</small>
+                    </div>
+                    <span class="p-3 rounded bg-primary-light">
+                        <i class="la la-globe text-primary" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Notifications Detected</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ total_notifications }}</h3>
+                        <small class="text-success">{{ changes_detected }} changes detected</small>
+                    </div>
+                    <span class="p-3 rounded bg-warning-light">
+                        <i class="la la-bell text-warning" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Alerts Dispatched</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ alerts_sent }}</h3>
+                        <small class="text-muted">Broadcasted to students</small>
+                    </div>
+                    <span class="p-3 rounded bg-secondary-light">
+                        <i class="la la-paper-plane text-secondary" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Crawl logs column -->
+    <div class="col-xl-8 col-lg-8">
+        <!-- Execution Run History Card -->
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Execution Run History</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-hover table-responsive-sm">
+                        <thead>
+                            <tr>
+                                <th><strong>Run ID</strong></th>
+                                <th><strong>Trigger</strong></th>
+                                <th><strong>Started At</strong></th>
+                                <th><strong>Duration</strong></th>
+                                <th><strong>Status</strong></th>
+                                <th><strong>Checked</strong></th>
+                                <th><strong>Success Rate</strong></th>
+                                <th><strong>Action</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in runs %}
+                                <tr {% if selected_run_id == r.id %}class="table-active"{% endif %}>
+                                    <td><strong>#{{ r.id }}</strong></td>
+                                    <td>
+                                        <span class="badge badge-outline-{% if r.trigger_type == 'Auto' %}info{% else %}primary{% endif %} badge-xs">
+                                            {{ r.trigger_type }}
+                                        </span>
+                                    </td>
+                                    <td style="font-size:12px;">{{ r.started_at.strftime('%d %b, %H:%M:%S') }}</td>
+                                    <td style="font-size:12px;">
+                                        {% if r.completed_at %}
+                                            {% set duration = (r.completed_at - r.started_at).total_seconds() %}
+                                            {% if duration < 60 %}
+                                                {{ "%.1f"|format(duration) }}s
+                                            {% else %}
+                                                {{ "%.1f"|format(duration / 60) }}m
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-warning">Running...</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if r.status == 'Completed' %}success{% elif r.status == 'Failed' %}danger{% else %}warning{% endif %} badge-xs">
+                                            {{ r.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ r.targets_count }}</td>
+                                    <td>
+                                        {% if r.targets_count > 0 %}
+                                            {{ "%.1f"|format(r.success_count / r.targets_count * 100) }}%
+                                        {% else %}
+                                            0.0%
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.admin_task_details', task_id=task.id, run_id=r.id) }}" class="btn btn-info btn-xs">
+                                            <i class="fa fa-eye mr-1"></i> View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">No execution history recorded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crawl Execution Log Card -->
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title" style="font-family:'Outfit',sans-serif;">
+                    {% if selected_run_id %}
+                        Crawl Execution Log (Run #{{ selected_run_id }})
+                    {% else %}
+                        Crawl Execution Log (Last 50 Crawls)
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div style="max-height: 480px; overflow-y: auto; padding-right: 10px;" class="dz-scroll">
+                    <div class="fa-timeline pl-3 pt-2">
+                        {% for log in recent_logs %}
+                            <div class="fa-timeline-item {% if log.status == 'success' %}date-success{% else %}date-danger{% endif %} mb-4 pl-2">
+                                <div class="fa-timeline-label" style="font-size:10.5px; font-weight:700;">{{ log.crawled_at.strftime('%d %b, %H:%M:%S') }}</div>
+                                <div class="fa-timeline-value text-black" style="font-size:12.5px; font-weight:600; line-height:1.4;">
+                                    {{ log.organization.name }}
+                                    {% if log.status == 'success' %}
+                                        {% if log.detected_changes %}
+                                            <span class="badge badge-success badge-xs ml-2" style="font-size:9.5px; border-radius:4px;"><i class="fa fa-circle-plus mr-1"></i>New Update</span>
+                                        {% else %}
+                                            <span class="badge badge-light text-muted badge-xs ml-2" style="font-size:9.5px; border-radius:4px;">No Changes</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge badge-danger badge-xs ml-2" style="font-size:9.5px; border-radius:4px;">Failed</span>
+                                        <div class="text-danger small mt-1 font-weight-500" style="font-family: monospace; font-size:11px; word-break: break-all;">
+                                            {{ log.error_message }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5 text-muted small">
+                                <i class="fa fa-info-circle mb-2 d-block" style="font-size: 20px; opacity:0.4;"></i>
+                                No execution logs logged for this task yet.
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Notifications Feed & Targets -->
+    <div class="col-xl-4 col-lg-4">
+        <!-- Announcements generated -->
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">
+                    {% if selected_run_id %}
+                        Announcements Discovered (Run #{{ selected_run_id }})
+                    {% else %}
+                        Generated Announcements
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Notices discovered and ingested by this task, awaiting moderation.</p>
+                
+                <div class="announcement-list" style="max-height: 250px; overflow-y: auto;">
+                    {% for notif in notifications %}
+                        <div class="p-3 mb-3 border rounded bg-light" style="border-color: rgba(0,0,0,0.06) !important;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge badge-outline-primary badge-xs">{{ notif.category }}</span>
+                                <small class="text-muted">{{ notif.created_at.strftime('%d %b, %H:%M') }}</small>
+                            </div>
+                            <h6 class="text-black mb-2" style="font-size: 13px; line-height: 1.4;">{{ notif.title }}</h6>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">{{ notif.organization.name[:25] }}...</small>
+                                
+                                {% if notif.status == 'Pending' %}
+                                    <span class="badge badge-warning badge-xs">Awaiting Approval</span>
+                                {% elif notif.status == 'Published' %}
+                                    <span class="badge badge-success badge-xs">Published</span>
+                                {% else %}
+                                    <span class="badge badge-danger badge-xs">{{ notif.status }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 text-muted small">
+                            <i class="fa fa-info-circle mb-2" style="font-size: 20px;"></i>
+                            <p>No announcements generated yet.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Coverage List -->
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Target Registry Segment</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Displaying up to 20 target colleges associated with this task.</p>
+                <div style="max-height: 200px; overflow-y: auto;" class="border p-2 rounded bg-light">
+                    <ul class="list-unstyled mb-0" style="font-size:11px;">
+                        {% for college in target_orgs %}
+                            <li class="mb-2 pb-2 border-bottom d-flex align-items-center justify-content-between">
+                                <div>
+                                    <span class="font-weight-bold text-black">{{ college.name }}</span>
+                                    <div class="text-muted" style="font-size: 10px;">{{ college.district or 'N/A' }}, {{ college.state }}</div>
+                                </div>
+                                <span class="badge badge-light" style="font-family: monospace;">{{ college.aishe_code }}</span>
+                            </li>
+                        {% else %}
+                            <li class="text-center py-3 text-muted">No organizations registered for this task.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% if target_count > 20 %}
+                    <small class="text-muted d-block mt-2 text-right">And {{ target_count - 20 }} more colleges...</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

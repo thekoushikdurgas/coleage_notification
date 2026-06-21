@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>FormsADDA Feed | Real-Time Admissions & Exam updates</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/eatio/images/favicon.png">
+    <!-- Bootstrap Select and Core Style -->
+    <link href="/static/eatio/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
+    <link href="/static/eatio/css/style.css" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
+    <!-- Custom tweaks to merge custom device mockups with Eatio style -->
+    <style>
+        .wa-avatar, .tg-avatar, .sms-avatar { display: flex; align-items: center; justify-content: center; }
+        .log-terminal { background: #04060b; color: #a2b0d0; padding: 12px; font-family: monospace; border-radius: 6px; height: 200px; overflow-y: auto; font-size: 11px; }
+        .terminal-line { margin-bottom: 4px; }
+        .system-line { color: #8a8d93; }
+        .success-line { color: #28a745; }
+        .info-line { color: #17a2b8; }
+        .warning-line { color: #ffc107; }
+        .error-line { color: #dc3545; }
+    </style>
+    
+</head>
+<body>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header">
+            <a href="/" class="brand-logo">
+                <img class="logo-abbr" src="/static/eatio/images/logo.png" alt="logo">
+                <span class="logo-compact" style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-left: 8px;"><span style="color:#8a4fff;">Forms</span>ADDA</span>
+                <span class="brand-title" style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: #fff; margin-left: 8px;"><span style="color:#8a4fff;">Forms</span>ADDA</span>
+            </a>
+
+            <div class="nav-control">
+                <div class="hamburger">
+                    <span class="line"></span><span class="line"></span><span class="line"></span>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+		
+		<!--**********************************
+            Header start
+        ***********************************-->
+        <div class="header">
+            <div class="header-content">
+                <nav class="navbar navbar-expand">
+                    <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+                            <div class="search_bar dropdown show">
+                                <div class="dropdown-menu p-0 m-0 show">
+                                    <form action="/" method="GET">
+                                        <input class="form-control" type="search" name="q" placeholder="Search Announcements..." aria-label="Search" value="">
+                                    </form>
+                                </div>
+								<span class="search_icon p-3 c-pointer" data-toggle="dropdown">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M23.7871 22.7761L17.9548 16.9437C19.5193 15.145 20.4665 12.7982 20.4665 10.2333C20.4665 4.58714 15.8741 0 10.2333 0C4.58714 0 0 4.59246 0 10.2333C0 15.8741 4.59246 20.4665 10.2333 20.4665C12.7982 20.4665 15.145 19.5193 16.9437 17.9548L22.7761 23.7871C22.9144 23.9255 23.1007 24 23.2816 24C23.4625 24 23.6488 23.9308 23.7871 23.7871C24.0639 23.5104 24.0639 23.0528 23.7871 22.7761ZM1.43149 10.2333C1.43149 5.38004 5.38004 1.43681 10.2279 1.43681C15.0812 1.43681 19.0244 5.38537 19.0244 10.2333C19.0244 15.0812 15.0812 19.035 10.2279 19.035C5.38004 19.035 1.43149 15.0865 1.43149 10.2333Z" fill="#A4A4A4"/></svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav header-right">
+							<li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link dz-fullscreen primary" href="javascript:void(0)">
+									<svg id="Capa_1" enable-background="new 0 0 482.239 482.239" height="22" viewBox="0 0 482.239 482.239" width="22" xmlns="http://www.w3.org/2000/svg"><path d="m0 17.223v120.56h34.446v-103.337h103.337v-34.446h-120.56c-9.52 0-17.223 7.703-17.223 17.223z" fill=""/><path d="m465.016 0h-120.56v34.446h103.337v103.337h34.446v-120.56c0-9.52-7.703-17.223-17.223-17.223z" fill=""/><path d="m447.793 447.793h-103.337v34.446h120.56c9.52 0 17.223-7.703 17.223-17.223v-120.56h-34.446z" fill="" /><path d="m34.446 344.456h-34.446v120.56c0 9.52 7.703 17.223 17.223 17.223h120.56v-34.446h-103.337z" fill=""/></svg>
+                                </a>
+							</li>
+                            
+                            <!-- Bell Notification Dropdown (Shows Crawling History Logs) -->
+							<li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link bell ai-icon warning" href="javascript:void(0)" role="button" data-toggle="dropdown">
+                                    <svg width="24" height="24" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.75 14.8385V12.0463C21.7471 9.88552 20.9385 7.80353 19.4821 6.20735C18.0258 4.61116 16.0264 3.61555 13.875 3.41516V1.625C13.875 1.39294 13.7828 1.17038 13.6187 1.00628C13.4546 0.842187 13.2321 0.75 13 0.75C12.7679 0.75 12.5454 0.842187 12.3813 1.00628C12.2172 1.17038 12.125 1.39294 12.125 1.625V3.41534C9.97361 3.61572 7.97429 4.61131 6.51794 6.20746C5.06159 7.80361 4.25291 9.88555 4.25 12.0463V14.8383C3.26257 15.0412 2.37529 15.5784 1.73774 16.3593C1.10019 17.1401 0.751339 18.1169 0.75 19.125C0.750764 19.821 1.02757 20.4882 1.51969 20.9803C2.01181 21.4724 2.67904 21.7492 3.375 21.75H8.71346C8.91521 22.738 9.45205 23.6259 10.2331 24.2636C11.0142 24.9013 11.9916 25.2497 13 25.2497C14.0084 25.2497 14.9858 24.9013 15.7669 24.2636C16.548 23.6259 17.0848 22.738 17.2865 21.75H22.625C23.321 21.7492 23.9882 21.4724 24.4803 20.9803C24.9724 20.4882 25.2492 19.821 25.25 19.125C25.2486 18.117 24.8998 17.1402 24.2622 16.3594C23.6247 15.5786 22.7374 15.0414 21.75 14.8385ZM6 12.0463C6.00232 10.2113 6.73226 8.45223 8.02974 7.15474C9.32723 5.85726 11.0863 5.12732 12.9212 5.125H13.0788C14.9137 5.12732 16.6728 5.85726 17.9703 7.15474C19.2677 8.45223 19.9977 10.2113 20 12.0463V14.75H6V12.0463ZM13 23.5C12.4589 23.4983 11.9316 23.3292 11.4905 23.0159C11.0493 22.7026 10.716 22.2604 10.5363 21.75H15.4637C15.284 22.2604 14.9507 22.7026 14.5095 23.0159C14.0684 23.3292 13.5411 23.4983 13 23.5ZM22.625 20H3.375C3.14298 19.9999 2.9205 19.9076 2.75644 19.7436C2.59237 19.5795 2.50014 19.357 2.5 19.125C2.50076 18.429 2.77757 17.7618 3.26969 17.2697C3.76181 16.7776 4.42904 16.5008 5.125 16.5H20.875C21.571 16.5008 22.2382 16.7776 22.7303 17.2697C23.2224 17.7618 23.4992 18.429 23.5 19.125C23.4999 19.357 23.4076 19.5795 23.2436 19.7436C23.0795 19.9076 22.857 19.9999 22.625 20Z" fill="#000"/></svg>
+                                    <div class="pulse-css"></div>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <div id="DZ_W_Notification1" class="widget-media dz-scroll p-3" style="height:340px; overflow-y:auto;">
+										<ul class="timeline">
+                                            
+                                                <li>
+                                                    <div class="timeline-panel">
+                                                        <div class="media mr-2 media-info">
+                                                            
+                                                                <i class="fa fa-spider"></i>
+                                                            
+                                                        </div>
+                                                        <div class="media-body">
+                                                            <h6 class="mb-1 text-black" style="font-size:12px; font-weight:600; line-height:1.2;">
+                                                                Visvesvaraya National Instit...
+                                                            </h6>
+                                                            <small class="d-block">03:29 AM - 
+                                                                
+                                                                    No changes.
+                                                                
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            
+                                                <li>
+                                                    <div class="timeline-panel">
+                                                        <div class="media mr-2 media-info">
+                                                            
+                                                                <i class="fa fa-spider"></i>
+                                                            
+                                                        </div>
+                                                        <div class="media-body">
+                                                            <h6 class="mb-1 text-black" style="font-size:12px; font-weight:600; line-height:1.2;">
+                                                                Vasireddy Venkatadri Interna...
+                                                            </h6>
+                                                            <small class="d-block">03:29 AM - 
+                                                                
+                                                                    No changes.
+                                                                
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            
+                                                <li>
+                                                    <div class="timeline-panel">
+                                                        <div class="media mr-2 media-info">
+                                                            
+                                                                <i class="fa fa-spider"></i>
+                                                            
+                                                        </div>
+                                                        <div class="media-body">
+                                                            <h6 class="mb-1 text-black" style="font-size:12px; font-weight:600; line-height:1.2;">
+                                                                The West Bengal National Uni...
+                                                            </h6>
+                                                            <small class="d-block">03:29 AM - 
+                                                                
+                                                                    No changes.
+                                                                
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            
+                                                <li>
+                                                    <div class="timeline-panel">
+                                                        <div class="media mr-2 media-info">
+                                                            
+                                                                <i class="fa fa-spider"></i>
+                                                            
+                                                        </div>
+                                                        <div class="media-body">
+                                                            <h6 class="mb-1 text-black" style="font-size:12px; font-weight:600; line-height:1.2;">
+                                                                TAMIL NADU NATIONAL LAW UNIV...
+                                                            </h6>
+                                                            <small class="d-block">03:29 AM - 
+                                                                
+                                                                    No changes.
+                                                                
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            
+                                                <li>
+                                                    <div class="timeline-panel">
+                                                        <div class="media mr-2 media-info">
+                                                            
+                                                                <i class="fa fa-spider"></i>
+                                                            
+                                                        </div>
+                                                        <div class="media-body">
+                                                            <h6 class="mb-1 text-black" style="font-size:12px; font-weight:600; line-height:1.2;">
+                                                                Symbiosis International (Dee...
+                                                            </h6>
+                                                            <small class="d-block">03:29 AM - 
+                                                                
+                                                                    No changes.
+                                                                
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            
+										</ul>
+                                    </div>
+                                    <a class="all-notification" href="/admin">Go to Admin Panel <i class="ti-arrow-right"></i></a>
+                                </div>
+							</li>
+                            
+                            <!-- User profile dummy -->
+                            <li class="nav-item dropdown header-profile">
+                                <a class="nav-link" href="#" role="button" data-toggle="dropdown">
+                                    <img src="/static/eatio/images/avatar/1.jpg" width="20" alt=""/>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!--**********************************
+            Header end
+        ***********************************-->
+
+        <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <div class="deznav">
+            <div class="deznav-scroll">
+				<ul class="metismenu" id="menu">
+                    <!-- Section Title -->
+                    <li class="nav-label">Management</li>
+                    <li class="">
+                        <a href="/admin" class="ai-icon" aria-expanded="false">
+							<i class="flaticon-381-networking"></i>
+							<span class="nav-text">Admin Dashboard</span>
+						</a>
+					</li>
+                    <li class="">
+                        <a href="/admin/colleges" class="ai-icon" aria-expanded="false">
+							<i class="flaticon-381-settings-1"></i>
+							<span class="nav-text">Manage Colleges</span>
+						</a>
+					</li>
+                    <li class="">
+                        <a href="/admin/tasks" class="ai-icon" aria-expanded="false">
+							<i class="flaticon-381-calendar-1"></i>
+							<span class="nav-text">Crawl Scheduler</span>
+						</a>
+					</li>
+                    <li class="">
+                        <a href="/student-inbox" class="ai-icon" aria-expanded="false">
+							<i class="flaticon-381-television"></i>
+							<span class="nav-text">Alerts Terminal</span>
+						</a>
+					</li>
+                    
+                    <li class="nav-label">Student Portal</li>
+                    <li class="mm-active">
+                        <a href="/" class="ai-icon" aria-expanded="false">
+							<i class="flaticon-381-notepad"></i>
+							<span class="nav-text">Updates Feed</span>
+						</a>
+					</li>
+                    <li class="">
+                        <a href="/subscribe" class="ai-icon" aria-expanded="false">
+							<i class="flaticon-381-heart"></i>
+							<span class="nav-text">Subscribe Alerts</span>
+						</a>
+					</li>
+                </ul>
+            </div>
+        </div>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body">
+            <div class="container-fluid">
+                <!-- Flash Alerts inside content body -->
+                
+                    
+                
+
+                
+<div class="form-head d-flex mb-4 align-items-start">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0">Updates Feed</h2>
+        <p class="mb-0">Real-time educational announcements aggregated from over 53,000+ official Indian portals.</p>
+    </div>
+</div>
+
+<!-- Filters Panel -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                <form action="/" method="GET" class="row align-items-end">
+                    <div class="col-xl-4 col-lg-4 col-md-6 mb-3 mb-lg-0">
+                        <label class="text-black font-weight-bold" style="font-size:12px;"><i class="fa fa-search text-primary mr-1"></i> Search Keyword</label>
+                        <input type="text" name="q" class="form-control" value="" placeholder="Search college, exam, course, state...">
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-3 col-md-6 mb-3 mb-lg-0">
+                        <label class="text-black font-weight-bold" style="font-size:12px;"><i class="fa fa-map-marker text-primary mr-1"></i> State</label>
+                        <select id="state" name="state" class="form-control default-select" onchange="this.form.submit()">
+                            <option value="">All States</option>
+                            
+                                <option value="Andaman and Nicobar Islands" >Andaman and Nicobar Islands</option>
+                            
+                                <option value="Andhra" >Andhra</option>
+                            
+                                <option value="Andhra Pradesh" >Andhra Pradesh</option>
+                            
+                                <option value="Arunachal Pradesh" >Arunachal Pradesh</option>
+                            
+                                <option value="Assam" >Assam</option>
+                            
+                                <option value="Assessment" >Assessment</option>
+                            
+                                <option value="Bihar" >Bihar</option>
+                            
+                                <option value="Chandigarh" >Chandigarh</option>
+                            
+                                <option value="Chhattisgarh" >Chhattisgarh</option>
+                            
+                                <option value="Delhi" >Delhi</option>
+                            
+                                <option value="Education" >Education</option>
+                            
+                                <option value="Examination" >Examination</option>
+                            
+                                <option value="Examinations" >Examinations</option>
+                            
+                                <option value="Goa" >Goa</option>
+                            
+                                <option value="Gujarat" >Gujarat</option>
+                            
+                                <option value="Haryana" >Haryana</option>
+                            
+                                <option value="Himachal Pradesh" >Himachal Pradesh</option>
+                            
+                                <option value="Jammu and Kashmir" >Jammu and Kashmir</option>
+                            
+                                <option value="Jharkhand" >Jharkhand</option>
+                            
+                                <option value="Karnataka" >Karnataka</option>
+                            
+                                <option value="Kerala" >Kerala</option>
+                            
+                                <option value="Ladakh" >Ladakh</option>
+                            
+                                <option value="Lakshadweep" >Lakshadweep</option>
+                            
+                                <option value="Madhya" >Madhya</option>
+                            
+                                <option value="Madhya Pradesh" >Madhya Pradesh</option>
+                            
+                                <option value="Maharashtra" >Maharashtra</option>
+                            
+                                <option value="Manipur" >Manipur</option>
+                            
+                                <option value="Meghalaya" >Meghalaya</option>
+                            
+                                <option value="Mizoram" >Mizoram</option>
+                            
+                                <option value="Nagaland" >Nagaland</option>
+                            
+                                <option value="Odisha" >Odisha</option>
+                            
+                                <option value="Puducherry" >Puducherry</option>
+                            
+                                <option value="Punjab" >Punjab</option>
+                            
+                                <option value="Rajasthan" >Rajasthan</option>
+                            
+                                <option value="Secondary" >Secondary</option>
+                            
+                                <option value="Sikkim" >Sikkim</option>
+                            
+                                <option value="Tamil" >Tamil</option>
+                            
+                                <option value="Tamil Nadu" >Tamil Nadu</option>
+                            
+                                <option value="Telangana" >Telangana</option>
+                            
+                                <option value="The Dadra and Nagar Haveli and Daman and Diu" >The Dadra and Nagar Haveli and Daman and Diu</option>
+                            
+                                <option value="Tripura" >Tripura</option>
+                            
+                                <option value="Uttar" >Uttar</option>
+                            
+                                <option value="Uttar Pradesh" >Uttar Pradesh</option>
+                            
+                                <option value="Uttarakhand" >Uttarakhand</option>
+                            
+                                <option value="West Bengal" >West Bengal</option>
+                            
+                        </select>
+                    </div>
+                    
+                    <div class="col-xl-3 col-lg-3 col-md-6 mb-3 mb-lg-0">
+                        <label class="text-black font-weight-bold" style="font-size:12px;"><i class="fa fa-tag text-primary mr-1"></i> Category</label>
+                        <select id="category" name="category" class="form-control default-select" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            
+                                <option value="admission" >Admission</option>
+                            
+                                <option value="exam" >Exam</option>
+                            
+                                <option value="result" >Result</option>
+                            
+                                <option value="policy" >Policy</option>
+                            
+                                <option value="scholarship" >Scholarship</option>
+                            
+                                <option value="other" >Other</option>
+                            
+                        </select>
+                    </div>
+                    
+                    <div class="col-xl-2 col-lg-2 col-md-6 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-block"><i class="fa fa-filter"></i> Apply</button>
+                        <a href="/" class="btn btn-secondary ml-1"><i class="fa fa-undo"></i></a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Announcements List -->
+    <div class="col-xl-8 col-xxl-8 col-lg-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-black font-w600 mb-0">Latest Announcements</h4>
+            <span class="badge badge-primary">289 Updates Active</span>
+        </div>
+        
+        
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary mr-2" style="font-size:16px;">
+                                    
+                                        <i class="fa fa-landmark"></i>
+                                    
+                                </span>
+                                <span class="text-black font-weight-bold mr-2" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="National Museum Institute of History of Art Conservation and Museology">National Museum Institute of History of Art Conservation and Museology</span>
+                                
+                                    <small class="text-muted"><i class="fa fa-map-marker"></i> Delhi</small>
+                                
+                            </div>
+                            <span class="badge badge-policy">policy</span>
+                        </div>
+                        
+                        <h4 class="text-black mb-3">
+                            
+                                <a href="/notifications/national-museum-institute-of-history-of-art-conservation-and-museology-directives-on-minimum-standards-for-higher-education-371" class="text-black">
+                                    National Museum Institute of History of Art Conservation and Museology Directives on Minimum Standards for Higher Education
+                                </a>
+                            
+                        </h4>
+                        
+                        <p class="text-muted mb-3" style="font-size: 13px;">
+                            A new circular has been issued by National Museum Institute of History of Art Conservation and Museology regarding minimum qualifications for teachers and academic standards in col...
+                        </p>
+                        
+                        <div class="row mb-3 bg-light p-2 rounded" style="margin: 0 1px;">
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Apply Starts</small>
+                                    <span class="text-black font-weight-bold" style="font-size: 13px;">15 June 2026</span>
+                                </div>
+                            
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Last Date</small>
+                                    <span class="text-danger font-weight-bold" style="font-size: 13px;">30 July 2026</span>
+                                </div>
+                            
+                            
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-success font-weight-bold" style="font-size:12px;">
+                                <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width: 8px; height: 8px;"></span> Active
+                            </span>
+                            
+                                <a href="/notifications/national-museum-institute-of-history-of-art-conservation-and-museology-directives-on-minimum-standards-for-higher-education-371" class="btn btn-outline-primary btn-sm">
+                                    View Details <i class="fa fa-arrow-right ml-1"></i>
+                                </a>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary mr-2" style="font-size:16px;">
+                                    
+                                        <i class="fa fa-landmark"></i>
+                                    
+                                </span>
+                                <span class="text-black font-weight-bold mr-2" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Indira Gandhi National Tribal University, Amarkantak">Indira Gandhi National Tribal University, Amarkantak</span>
+                                
+                                    <small class="text-muted"><i class="fa fa-map-marker"></i> Madhya Pradesh</small>
+                                
+                            </div>
+                            <span class="badge badge-policy">policy</span>
+                        </div>
+                        
+                        <h4 class="text-black mb-3">
+                            
+                                <a href="/notifications/indira-gandhi-national-tribal-university-amarkantak-approvals-update-120-new-technical-institutions-approved-370" class="text-black">
+                                    Indira Gandhi National Tribal University, Amarkantak Approvals Update: 120 New Technical Institutions Approved
+                                </a>
+                            
+                        </h4>
+                        
+                        <p class="text-muted mb-3" style="font-size: 13px;">
+                            Indira Gandhi National Tribal University, Amarkantak has released the official approval list for technical colleges and universities for the academic year 2026-27. The council has ...
+                        </p>
+                        
+                        <div class="row mb-3 bg-light p-2 rounded" style="margin: 0 1px;">
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Apply Starts</small>
+                                    <span class="text-black font-weight-bold" style="font-size: 13px;">15 June 2026</span>
+                                </div>
+                            
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Last Date</small>
+                                    <span class="text-danger font-weight-bold" style="font-size: 13px;">30 July 2026</span>
+                                </div>
+                            
+                            
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-success font-weight-bold" style="font-size:12px;">
+                                <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width: 8px; height: 8px;"></span> Active
+                            </span>
+                            
+                                <a href="/notifications/indira-gandhi-national-tribal-university-amarkantak-approvals-update-120-new-technical-institutions-approved-370" class="btn btn-outline-primary btn-sm">
+                                    View Details <i class="fa fa-arrow-right ml-1"></i>
+                                </a>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary mr-2" style="font-size:16px;">
+                                    
+                                        <i class="fa fa-landmark"></i>
+                                    
+                                </span>
+                                <span class="text-black font-weight-bold mr-2" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="NATIONAL INSTITUTE OF FOOD TECHNOLOGY ENTREPRENEURSHIP AND MANAGEMENT">NATIONAL INSTITUTE OF FOOD TECHNOLOGY ENTREPRENEURSHIP AND MANAGEMENT</span>
+                                
+                                    <small class="text-muted"><i class="fa fa-map-marker"></i> Haryana</small>
+                                
+                            </div>
+                            <span class="badge badge-policy">policy</span>
+                        </div>
+                        
+                        <h4 class="text-black mb-3">
+                            
+                                <a href="/notifications/national-institute-of-food-technology-entrepreneurship-and-management-directives-on-minimum-standards-for-higher-education-368" class="text-black">
+                                    NATIONAL INSTITUTE OF FOOD TECHNOLOGY ENTREPRENEURSHIP AND MANAGEMENT Directives on Minimum Standards for Higher Education
+                                </a>
+                            
+                        </h4>
+                        
+                        <p class="text-muted mb-3" style="font-size: 13px;">
+                            A new circular has been issued by NATIONAL INSTITUTE OF FOOD TECHNOLOGY ENTREPRENEURSHIP AND MANAGEMENT regarding minimum qualifications for teachers and academic standards in coll...
+                        </p>
+                        
+                        <div class="row mb-3 bg-light p-2 rounded" style="margin: 0 1px;">
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Apply Starts</small>
+                                    <span class="text-black font-weight-bold" style="font-size: 13px;">15 June 2026</span>
+                                </div>
+                            
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Last Date</small>
+                                    <span class="text-danger font-weight-bold" style="font-size: 13px;">30 July 2026</span>
+                                </div>
+                            
+                            
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-success font-weight-bold" style="font-size:12px;">
+                                <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width: 8px; height: 8px;"></span> Active
+                            </span>
+                            
+                                <a href="/notifications/national-institute-of-food-technology-entrepreneurship-and-management-directives-on-minimum-standards-for-higher-education-368" class="btn btn-outline-primary btn-sm">
+                                    View Details <i class="fa fa-arrow-right ml-1"></i>
+                                </a>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary mr-2" style="font-size:16px;">
+                                    
+                                        <i class="fa fa-landmark"></i>
+                                    
+                                </span>
+                                <span class="text-black font-weight-bold mr-2" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="National Law University, Cuttuck">National Law University, Cuttuck</span>
+                                
+                                    <small class="text-muted"><i class="fa fa-map-marker"></i> Odisha</small>
+                                
+                            </div>
+                            <span class="badge badge-policy">policy</span>
+                        </div>
+                        
+                        <h4 class="text-black mb-3">
+                            
+                                <a href="/notifications/national-law-university-cuttuck-directives-on-minimum-standards-for-higher-education-366" class="text-black">
+                                    National Law University, Cuttuck Directives on Minimum Standards for Higher Education
+                                </a>
+                            
+                        </h4>
+                        
+                        <p class="text-muted mb-3" style="font-size: 13px;">
+                            A new circular has been issued by National Law University, Cuttuck regarding minimum qualifications for teachers and academic standards in colleges. All affiliated institutions mus...
+                        </p>
+                        
+                        <div class="row mb-3 bg-light p-2 rounded" style="margin: 0 1px;">
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Apply Starts</small>
+                                    <span class="text-black font-weight-bold" style="font-size: 13px;">15 June 2026</span>
+                                </div>
+                            
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Last Date</small>
+                                    <span class="text-danger font-weight-bold" style="font-size: 13px;">30 July 2026</span>
+                                </div>
+                            
+                            
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-success font-weight-bold" style="font-size:12px;">
+                                <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width: 8px; height: 8px;"></span> Active
+                            </span>
+                            
+                                <a href="/notifications/national-law-university-cuttuck-directives-on-minimum-standards-for-higher-education-366" class="btn btn-outline-primary btn-sm">
+                                    View Details <i class="fa fa-arrow-right ml-1"></i>
+                                </a>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary mr-2" style="font-size:16px;">
+                                    
+                                        <i class="fa fa-landmark"></i>
+                                    
+                                </span>
+                                <span class="text-black font-weight-bold mr-2" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="NATIONAL INSTITUTE OF TECHNICAL TEACHERS TRAINING AND RESEARCH, CHENNAI">NATIONAL INSTITUTE OF TECHNICAL TEACHERS TRAINING AND RESEARCH, CHENNAI</span>
+                                
+                                    <small class="text-muted"><i class="fa fa-map-marker"></i> Tamil Nadu</small>
+                                
+                            </div>
+                            <span class="badge badge-scholarship">scholarship</span>
+                        </div>
+                        
+                        <h4 class="text-black mb-3">
+                            
+                                <a href="/notifications/national-institute-of-technical-teachers-training-and-research-chennai-national-scholarship-portal-nsp-applications-extension-364" class="text-black">
+                                    NATIONAL INSTITUTE OF TECHNICAL TEACHERS TRAINING AND RESEARCH, CHENNAI National Scholarship Portal (NSP) Applications Extension
+                                </a>
+                            
+                        </h4>
+                        
+                        <p class="text-muted mb-3" style="font-size: 13px;">
+                            The last date to submit online applications for various Central Sector Scholarship schemes on the National Scholarship Portal has been extended. The new deadline for submission is ...
+                        </p>
+                        
+                        <div class="row mb-3 bg-light p-2 rounded" style="margin: 0 1px;">
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Apply Starts</small>
+                                    <span class="text-black font-weight-bold" style="font-size: 13px;">15 June 2026</span>
+                                </div>
+                            
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Last Date</small>
+                                    <span class="text-danger font-weight-bold" style="font-size: 13px;">30 July 2026</span>
+                                </div>
+                            
+                            
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-success font-weight-bold" style="font-size:12px;">
+                                <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width: 8px; height: 8px;"></span> Active
+                            </span>
+                            
+                                <a href="/notifications/national-institute-of-technical-teachers-training-and-research-chennai-national-scholarship-portal-nsp-applications-extension-364" class="btn btn-outline-primary btn-sm">
+                                    View Details <i class="fa fa-arrow-right ml-1"></i>
+                                </a>
+                            
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center">
+                                <span class="text-primary mr-2" style="font-size:16px;">
+                                    
+                                        <i class="fa fa-landmark"></i>
+                                    
+                                </span>
+                                <span class="text-black font-weight-bold mr-2" style="max-width:280px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="Motilal Nehru National Institute of Technology, Allahabad">Motilal Nehru National Institute of Technology, Allahabad</span>
+                                
+                                    <small class="text-muted"><i class="fa fa-map-marker"></i> Uttar Pradesh</small>
+                                
+                            </div>
+                            <span class="badge badge-policy">policy</span>
+                        </div>
+                        
+                        <h4 class="text-black mb-3">
+                            
+                                <a href="/notifications/motilal-nehru-national-institute-of-technology-allahabad-approvals-update-120-new-technical-institutions-approved-363" class="text-black">
+                                    Motilal Nehru National Institute of Technology, Allahabad Approvals Update: 120 New Technical Institutions Approved
+                                </a>
+                            
+                        </h4>
+                        
+                        <p class="text-muted mb-3" style="font-size: 13px;">
+                            Motilal Nehru National Institute of Technology, Allahabad has released the official approval list for technical colleges and universities for the academic year 2026-27. The council...
+                        </p>
+                        
+                        <div class="row mb-3 bg-light p-2 rounded" style="margin: 0 1px;">
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Apply Starts</small>
+                                    <span class="text-black font-weight-bold" style="font-size: 13px;">15 June 2026</span>
+                                </div>
+                            
+                            
+                                <div class="col-sm-4 col-6 py-1">
+                                    <small class="text-muted d-block">Last Date</small>
+                                    <span class="text-danger font-weight-bold" style="font-size: 13px;">30 July 2026</span>
+                                </div>
+                            
+                            
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                            <span class="text-success font-weight-bold" style="font-size:12px;">
+                                <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width: 8px; height: 8px;"></span> Active
+                            </span>
+                            
+                                <a href="/notifications/motilal

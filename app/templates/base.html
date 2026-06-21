@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}FormsADDA | Education Intelligence Dashboard{% endblock %}</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='eatio/images/favicon.png') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <!-- Bootstrap Select and Core Style -->
+    <link href="{{ url_for('static', filename='eatio/vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='eatio/css/style.css') }}" rel="stylesheet">
+    <link href="https://cdn.lineicons.com/2.0/LineIcons.css" rel="stylesheet">
+    <!-- Bootstrap 5.3.3 Core CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- FormsADDA Custom Design System -->
+    <link href="{{ url_for('static', filename='css/formsadda-custom.css') }}" rel="stylesheet">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header" role="banner">
+            <a href="{{ url_for('main.index') }}" class="brand-logo">
+                <img class="logo-abbr" src="{{ url_for('static', filename='eatio/images/logo.png') }}" alt="logo">
+                <span class="logo-compact" style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-left:8px;"><span style="color:#8a4fff;">Forms</span>ADDA</span>
+                <span class="brand-title" style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-left:8px;"><span style="color:#8a4fff;">Forms</span>ADDA</span>
+            </a>
+
+            <div class="nav-control" role="button" aria-label="Toggle navigation sidebar" tabindex="0">
+                <div class="hamburger">
+                    <span class="line"></span><span class="line"></span><span class="line"></span>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+
+		<!--**********************************
+            Header start
+        ***********************************-->
+        <header class="header" role="banner">
+            <div class="header-content">
+                <nav class="navbar navbar-expand" aria-label="Header Navigation">
+                    <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+                            <div class="search_bar dropdown show" role="search">
+                                <div class="dropdown-menu p-0 m-0 show">
+                                    <form action="{{ url_for('main.index') }}" method="GET">
+                                        <input class="form-control" type="search" name="q" placeholder="Search Announcements..." aria-label="Search Announcements" value="{{ request.args.get('q') or '' }}">
+                                    </form>
+                                </div>
+								<span class="search_icon p-3 c-pointer" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="true" aria-label="Toggle search input dropdown" tabindex="0">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M23.7871 22.7761L17.9548 16.9437C19.5193 15.145 20.4665 12.7982 20.4665 10.2333C20.4665 4.58714 15.8741 0 10.2333 0C4.58714 0 0 4.59246 0 10.2333C0 15.8741 4.59246 20.4665 10.2333 20.4665C12.7982 20.4665 15.145 19.5193 16.9437 17.9548L22.7761 23.7871C22.9144 23.9255 23.1007 24 23.2816 24C23.4625 24 23.6488 23.9308 23.7871 23.7871C24.0639 23.5104 24.0639 23.0528 23.7871 22.7761ZM1.43149 10.2333C1.43149 5.38004 5.38004 1.43681 10.2279 1.43681C15.0812 1.43681 19.0244 5.38537 19.0244 10.2333C19.0244 15.0812 15.0812 19.035 10.2279 19.035C5.38004 19.035 1.43149 15.0865 1.43149 10.2333Z" fill="#A4A4A4"/></svg>
+                                </span>
+                            </div>
+                        </div>
+
+                        <ul class="navbar-nav header-right">
+                            <!-- Mock Role Switcher Dropdown -->
+                            <li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Switch User Role" style="padding: 0 10px; min-width: 140px;">
+                                    <span class="badge {% if session.get('user_role') == 'admin' %}badge-danger{% elif session.get('user_role') == 'moderator' %}badge-warning{% else %}badge-info{% endif %}" style="font-size: 11.5px; padding: 6px 12px; border-radius: 12px; cursor: pointer; color: #fff !important;">
+                                        <i class="fa fa-user-circle mr-1"></i> Role: {{ session.get('user_role', 'admin')|upper }}
+                                    </span>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" style="border-radius:10px; border:none; box-shadow:0 8px 24px rgba(0,0,0,0.12); padding: 8px;">
+                                    <h6 class="dropdown-header text-muted" style="font-size:10px; font-weight:600; text-transform:uppercase; padding-left: 14px;">Select Mock Role</h6>
+                                    <a class="dropdown-item {% if session.get('user_role') == 'admin' %}active text-white{% endif %}" href="{{ url_for('main.set_role', role='admin') }}" style="border-radius:6px; font-size:12px; font-weight:500; padding: 8px 14px;">
+                                        <i class="fa-solid fa-user-shield mr-2"></i> Admin Role
+                                    </a>
+                                    <a class="dropdown-item {% if session.get('user_role') == 'moderator' %}active text-white{% endif %}" href="{{ url_for('main.set_role', role='moderator') }}" style="border-radius:6px; font-size:12px; font-weight:500; padding: 8px 14px;">
+                                        <i class="fa-solid fa-user-pen mr-2"></i> Moderator Role
+                                    </a>
+                                    <a class="dropdown-item {% if session.get('user_role') == 'student' %}active text-white{% endif %}" href="{{ url_for('main.set_role', role='student') }}" style="border-radius:6px; font-size:12px; font-weight:500; padding: 8px 14px;">
+                                        <i class="fa-solid fa-user-graduate mr-2"></i> Student Role
+                                    </a>
+                                </div>
+                            </li>
+
+                            <!-- Fullscreen Toggle -->
+							<li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link dz-fullscreen primary" href="javascript:void(0)" role="button" aria-label="Toggle Fullscreen Mode">
+								    <svg id="Capa_1" enable-background="new 0 0 482.239 482.239" height="22" viewBox="0 0 482.239 482.239" width="22" xmlns="http://www.w3.org/2000/svg"><path d="m0 17.223v120.56h34.446v-103.337h103.337v-34.446h-120.56c-9.52 0-17.223 7.703-17.223 17.223z" fill=""/><path d="m465.016 0h-120.56v34.446h103.337v103.337h34.446v-120.56c0-9.52-7.703-17.223-17.223-17.223z" fill=""/><path d="m447.793 447.793h-103.337v34.446h120.56c9.52 0 17.223-7.703 17.223-17.223v-120.56h-34.446z" fill="" /><path d="m34.446 344.456h-34.446v120.56c0 9.52 7.703 17.223 17.223 17.223h120.56v-34.446h-103.337z" fill=""/></svg>
+                                </a>
+							</li>
+
+                            <!-- Bell Notification Dropdown (Shows Crawling History Logs) -->
+							<li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link bell ai-icon warning" href="javascript:void(0)" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Show Crawl Activity Logs" style="position:relative;">
+                                    <i class="fa-solid fa-bell" style="font-size:18px;"></i>
+                                    <div class="pulse-css"></div>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" style="width:360px; border-radius:14px; padding:0; overflow:hidden; border:none; box-shadow:0 8px 32px rgba(0,0,0,0.12);">
+                                    <div class="px-3 py-2 d-flex align-items-center justify-content-between" style="background:linear-gradient(135deg,#2f4cdd,#8a4fff); color:#fff;">
+                                        <span style="font-family:'Outfit',sans-serif; font-weight:700; font-size:14px;"><i class="fa fa-spider mr-2"></i>Crawl Activity</span>
+                                        <small style="opacity:0.8; font-size:11px;">Last 10 events</small>
+                                    </div>
+                                    <div id="DZ_W_Notification1" class="notification-scroll-area p-3" aria-live="polite" aria-label="Crawl Activity Log" aria-atomic="false">
+									    <ul class="timeline">
+                                            {% for log in global_recent_logs %}
+                                                <li>
+                                                    <div class="timeline-panel">
+                                                        <div class="media mr-2 {% if log.status == 'success' %}media-info{% else %}media-danger{% endif %}">
+                                                            {% if log.status == 'success' %}
+                                                                <i class="fa fa-spider"></i>
+                                                            {% else %}
+                                                                <i class="fa fa-triangle-exclamation"></i>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="media-body">
+                                                            <h6 class="mb-1 text-black" style="font-size:12px; font-weight:600; line-height:1.2;">
+                                                                {{ log.organization.name[:28] }}...
+                                                            </h6>
+                                                            <small class="d-block">{{ log.crawled_at.strftime("%I:%M %p") }} -
+                                                                {% if log.status == 'success' %}
+                                                                    {% if log.detected_changes %}<span class="text-success font-weight-bold">New announcement!</span>{% else %}No changes.{% endif %}
+                                                                {% else %}
+                                                                    <span class="text-danger">Crawl failed.</span>
+                                                                {% endif %}
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            {% else %}
+                                                <li class="p-3 text-center text-muted">
+                                                    <i class="fa fa-hourglass-half d-block mb-2" style="font-size:24px; opacity:0.4;"></i>
+                                                    No crawl activity recorded yet.
+                                                </li>
+                                            {% endfor %}
+									    </ul>
+                                    </div>
+                                    <a class="all-notification" href="{{ url_for('main.admin_dashboard') }}">Go to Admin Panel <i class="ti-arrow-right"></i></a>
+                                </div>
+							</li>
+
+                            <!-- User Profile Dropdown -->
+                            <li class="nav-item dropdown header-profile">
+                                <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Show User Profile Options">
+                                    <div class="profile-avatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#8a4fff,#2f4cdd);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:14px;">
+                                        FA
+                                    </div>
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right" style="width:220px;border-radius:14px;border:none;box-shadow:0 8px 32px rgba(0,0,0,0.12);padding:8px;">
+                                    <div class="d-flex align-items-center px-3 py-2 mb-2" style="border-bottom:1px solid #f1f3f9;">
+                                        <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#8a4fff,#2f4cdd);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:14px;margin-right:10px;">FA</div>
+                                        <div>
+                                            <div style="font-weight:700;font-size:13px;color:#1a202c;">Admin User</div>
+                                            <div style="font-size:11px;color:#6b7280;">FormsADDA Control</div>
+                                        </div>
+                                    </div>
+                                    <a href="{{ url_for('main.admin_dashboard') }}" class="dropdown-item" style="border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;">
+                                        <i class="fa fa-gauge-high mr-2 text-primary"></i> Admin Dashboard
+                                    </a>
+                                    <a href="{{ url_for('main.admin_colleges') }}" class="dropdown-item" style="border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;">
+                                        <i class="fa fa-university mr-2 text-primary"></i> Manage Colleges
+                                    </a>
+                                    <a href="{{ url_for('main.index') }}" class="dropdown-item" style="border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;">
+                                        <i class="fa fa-rss mr-2 text-success"></i> Public Feed
+                                    </a>
+                                    <div style="border-top:1px solid #f1f3f9;margin:6px 0;"></div>
+                                    <a href="{{ url_for('main.subscribe') }}" class="dropdown-item" style="border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;">
+                                        <i class="fa fa-bell mr-2 text-warning"></i> Subscribe Alerts
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </header>
+        <!--**********************************
+            Header end
+        ***********************************-->
+
+        <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <nav class="deznav" aria-label="Main Navigation">
+            <div class="deznav-scroll">
+			    <ul class="metismenu" id="menu" role="list">
+                    {% if session.get('user_role') in ['admin', 'moderator'] %}
+                    <!-- Section Title -->
+                    <li class="nav-label" role="presentation">Management</li>
+                    <li class="{% if request.path == '/admin' %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.admin_dashboard') }}" class="ai-icon" aria-expanded="{% if request.path == '/admin' %}true{% else %}false{% endif %}" {% if request.path == '/admin' %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-networking" aria-hidden="true"></i>
+					        <span class="nav-text">Admin Dashboard</span>
+					    </a>
+				    </li>
+                    <li class="{% if request.path.startswith('/admin/colleges') %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.admin_colleges') }}" class="ai-icon" aria-expanded="{% if request.path.startswith('/admin/colleges') %}true{% else %}false{% endif %}" {% if request.path.startswith('/admin/colleges') %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-settings-1" aria-hidden="true"></i>
+					        <span class="nav-text">Manage Colleges</span>
+					    </a>
+				    </li>
+                    {% if session.get('user_role') == 'admin' %}
+                    <li class="{% if request.path.startswith('/admin/tasks') %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.admin_tasks') }}" class="ai-icon" aria-expanded="{% if request.path.startswith('/admin/tasks') %}true{% else %}false{% endif %}" {% if request.path.startswith('/admin/tasks') %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-calendar-1" aria-hidden="true"></i>
+					        <span class="nav-text">Crawl Scheduler</span>
+					    </a>
+				    </li>
+                    {% endif %}
+                    <li class="{% if request.path == '/student-inbox' %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.student_inbox') }}" class="ai-icon" aria-expanded="{% if request.path == '/student-inbox' %}true{% else %}false{% endif %}" {% if request.path == '/student-inbox' %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-television" aria-hidden="true"></i>
+					        <span class="nav-text">Alerts Terminal</span>
+					    </a>
+				    </li>
+                    {% endif %}
+
+                    <li class="nav-label" role="presentation">Student Portal</li>
+                    <li class="{% if request.path == '/' %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.index') }}" class="ai-icon" aria-expanded="{% if request.path == '/' %}true{% else %}false{% endif %}" {% if request.path == '/' %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-notepad" aria-hidden="true"></i>
+					        <span class="nav-text">Updates Feed</span>
+					    </a>
+				    </li>
+                    <li class="{% if request.path == '/subscribe' %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.subscribe') }}" class="ai-icon" aria-expanded="{% if request.path == '/subscribe' %}true{% else %}false{% endif %}" {% if request.path == '/subscribe' %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-heart" aria-hidden="true"></i>
+					        <span class="nav-text">Subscribe Alerts</span>
+					    </a>
+				    </li>
+                </ul>
+
+                {% if session.get('user_role') == 'admin' %}
+                <!-- Sidebar Bottom Card -->
+                <div class="add-menu-sidebar" style="background:linear-gradient(135deg,rgba(47,76,221,0.08),rgba(138,79,255,0.08));border-radius:12px;padding:16px;margin:16px 12px;border:1px solid rgba(138,79,255,0.15);">
+                    <div style="font-size:22px;margin-bottom:8px;">🎓</div>
+                    <p style="font-size:11.5px;color:#6b7280;margin-bottom:10px;line-height:1.4;">Monitor 53,000+ official Indian education portals in real-time.</p>
+                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-primary btn-xs btn-block" style="border-radius:8px;">Run Crawl</a>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <main class="content-body" id="main-content" role="main">
+            <div class="container-fluid">
+                <!-- Flash Alerts inside content body -->
+                <div role="status" aria-live="polite" aria-atomic="true">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert {% if category == 'success' %}alert-success{% elif category == 'error' %}alert-danger{% else %}alert-info{% endif %} alert-dismissible fade show mt-3" style="border-radius:10px;border:none;box-shadow:0 4px 16px rgba(0,0,0,0.08);" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close alert"><span aria-hidden="true">&times;</span></button>
+                                <strong>{% if category == 'success' %}<i class="fa fa-check-circle mr-1" aria-hidden="true"></i>Success!{% elif category == 'error' %}<i class="fa fa-exclamation-circle mr-1" aria-hidden="true"></i>Error!{% else %}<i class="fa fa-info-circle mr-1" aria-hidden="true"></i>Notice!{% endif %}</strong> {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                </div>
+
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+        <!--**********************************
+            Content body end
+        ***********************************-->
+
+        <!--**********************************
+            Footer start
+        ***********************************-->
+        <footer class="footer" role="contentinfo">
+            <div class="copyright">
+                <p>Copyright &copy; Designed &amp; Developed by <strong style="color:#8a4fff;">Forms</strong>ADDA 2026</p>
+            </div>
+        </footer>
+        <!--**********************************
+            Footer end
+        ***********************************-->
+
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="{{ url_for('static', filename='eatio/vendor/global/global.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='eatio/vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='eatio/js/custom.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='eatio/js/deznav-init.js') }}"></script>
+
+    <script>
+    // Channel card checkbox toggle for subscribe page
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.channel-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+                const cb = card.querySelector('input[type="checkbox"]');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    card.classList.toggle('selected', cb.checked);
+                }
+            });
+            // Init state on load
+            const cb = card.querySelector('input[type="checkbox"]');
+            if (cb && cb.checked) card.classList.add('selected');
+        });
+    });
+    </script>
+
+    <!-- Bootstrap 5.3.3 Bundle with Popper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

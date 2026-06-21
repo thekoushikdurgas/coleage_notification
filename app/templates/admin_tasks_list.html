@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}Crawl Scheduler | FormsADDA Admin{% endblock %}
+
+{% block content %}
+<div class="form-head d-flex mb-3 align-items-start flex-column flex-md-row">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">Crawl Scheduler & Task Manager</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-0" style="font-size:12px;">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.admin_dashboard') }}" style="color:#2f4cdd;font-weight:600;"><i class="fa fa-gauge-high mr-1"></i>Dashboard</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">Scheduler</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<!-- Scheduler Stats Row -->
+<div class="row">
+    <div class="col-xl-4 col-sm-6">
+        <div class="widget-stat card bg-primary">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-tasks" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1 text-white">Total Tasks</p>
+                        <h3 class="text-white">{{ total_tasks }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-sm-6">
+        <div class="widget-stat card bg-success">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-check-circle" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1 text-white">Active Schedulers</p>
+                        <h3 class="text-white">{{ active_tasks }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-sm-6">
+        <div class="widget-stat card bg-warning">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-pause-circle" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1 text-white">Paused Schedulers</p>
+                        <h3 class="text-white">{{ paused_tasks }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Tasks List Panel -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Configured Tasks</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-responsive-md">
+                        <thead>
+                            <tr>
+                                <th><strong>Task Details</strong></th>
+                                <th><strong>Schedule</strong></th>
+                                <th><strong>Status</strong></th>
+                                <th><strong>Target Coverage</strong></th>
+                                <th><strong>Recent Run</strong></th>
+                                <th><strong>Actions</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <div class="font-w600 text-black">{{ task.name }}</div>
+                                        <small class="text-muted">ID: #{{ task.id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-xs badge-info">
+                                            Every 
+                                            {% if task.frequency.endswith('s') %}
+                                                {{ task.frequency[:-1] }} seconds
+                                            {% elif task.frequency.endswith('m') %}
+                                                {{ task.frequency[:-1] }} minutes
+                                            {% elif task.frequency.endswith('h') %}
+                                                {{ task.frequency[:-1] }} hours
+                                            {% elif task.frequency.endswith('d') %}
+                                                {{ task.frequency[:-1] }} days
+                                            {% else %}
+                                                {{ task.frequency }}
+                                            {% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if task.status == 'Active' %}
+                                            <span class="badge-task-active"><i class="fa fa-circle-play mr-1"></i>Active</span>
+                                        {% elif task.status == 'Paused' %}
+                                            <span class="badge-task-paused"><i class="fa fa-circle-pause mr-1"></i>Paused</span>
+                                        {% else %}
+                                            <span class="badge-task-failed"><i class="fa fa-circle-xmark mr-1"></i>Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.target_type == 'all' %}
+                                            <span class="badge badge-outline-success">All Tracked</span>
+                                        {% elif task.target_type == 'state' %}
+                                            <span class="badge badge-outline-warning">State: {{ task.target_query }}</span>
+                                        {% else %}
+                                            {% set t_list = task.target_query.split(',') %}
+                                            <span class="badge badge-outline-primary">{{ t_list|length }} Colleges</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.last_run_at %}
+                                            <div style="font-size:12px; font-weight:600; color:#1a202c;" class="mb-1">{{ task.last_run_at.strftime('%d %b, %H:%M') }}</div>
+                                            <span class="badge badge-light text-muted" style="font-size: 10px; font-weight:500;">Next: {{ task.next_run_at.strftime('%d %b, %H:%M') if task.next_run_at else 'N/A' }}</span>
+                                        {% else %}
+                                            <span class="text-danger font-w500" style="font-size:11px;">Never Executed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <!-- Manual Trigger -->
+                                            <form action="{{ url_for('main.admin_task_run', task_id=task.id) }}" method="POST" class="mr-1">
+                                                <button type="submit" class="btn btn-success btn-xs" title="Run Scheduler Cycle Now">
+                                                    <i class="fa fa-play mr-1"></i> Run
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Toggle Toggle -->
+                                            <form action="{{ url_for('main.admin_task_toggle', task_id=task.id) }}" method="POST" class="mr-1">
+                                                {% if task.status == 'Active' %}
+                                                    <button type="submit" class="btn btn-warning btn-xs" title="Pause Task">
+                                                        <i class="fa fa-pause"></i>
+                                                    </button>
+                                                {% else %}
+                                                    <button type="submit" class="btn btn-primary btn-xs" title="Resume Task">
+                                                        <i class="fa fa-play-circle"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </form>
+                                            
+                                            <!-- Analytics Link -->
+                                            <a href="{{ url_for('main.admin_task_details', task_id=task.id) }}" class="btn btn-info btn-xs mr-1" title="View Logs & Performance Analytics">
+                                                <i class="fa fa-chart-bar"></i>
+                                            </a>
+                                            
+                                            <!-- Delete -->
+                                            <form action="{{ url_for('main.admin_task_delete', task_id=task.id) }}" method="POST">
+                                                <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('WARNING: Are you sure you want to delete this crawling task? Its statistics and historical reports will be permanently lost!')">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">No scheduled crawling tasks configured. Create one on the right.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Form Panel -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Create Crawling Task</h4>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.admin_task_create') }}" method="POST">
+                    
+                    <div class="form-group">
+                        <label class="text-black font-w600">Task Title</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Karnataka Admission Scraper" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="text-black font-w600">Execution Frequency</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="number" name="frequency_val" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="col-6">
+                                <select name="frequency_unit" class="form-control default-select">
+                                    <option value="s">Seconds</option>
+                                    <option value="m">Minutes</option>
+                                    <option value="h" selected>Hours</option>
+                                    <option value="d">Days</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="text-black font-w600">Target Range</label>
+                        <select name="target_type" id="targetTypeSelect" class="form-control default-select">
+                            <option value="all" {% if not selected_colleges %}selected{% endif %}>All Tracked Organizations</option>
+                            <option value="state">All Colleges by State</option>
+                            <option value="selected" {% if selected_colleges %}selected{% endif %}>Selected Colleges from Registry</option>
+                        </select>
+                    </div>
+                    
+                    <!-- State Selection Field (Conditional) -->
+                    <div class="form-group" id="stateSelectionGroup" style="display: none;">
+                        <label class="text-black font-w600">Select State</label>
+                        <select name="state" class="form-control default-select">
+                            <option value="">Choose State...</option>
+                            {% for state in states %}
+                                <option value="{{ state }}">{{ state }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Selected Colleges Field (Conditional) -->
+                    <div class="form-group" id="selectedCollegesGroup" {% if not selected_colleges %}style="display: none;"{% endif %}>
+                        <label class="text-black font-w600">Selected Colleges</label>
+                        {% if selected_colleges %}
+                            <div class="alert alert-info py-2" style="font-size: 12px;">
+                                <i class="fa fa-info-circle mr-1"></i> Pre-filled with <strong>{{ selected_colleges|length }} selected</strong> organizations.
+                            </div>
+                            <input type="hidden" name="selected_ids" value="{{ selected_ids }}">
+                            <div style="max-height: 120px; overflow-y: auto; font-size: 11px;" class="border p-2 rounded bg-light">
+                                <ul class="list-unstyled mb-0">
+                                    {% for college in selected_colleges %}
+                                        <li class="mb-1"><span class="badge badge-xs badge-light">{{ college.aishe_code }}</span> {{ college.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning py-2 mb-0" style="font-size:12px;">
+                                <i class="fa fa-exclamation-triangle mr-1"></i> No colleges selected. Please select them from the <a href="{{ url_for('main.admin_colleges') }}"><strong>College Registry</strong></a> page first and click "Create Scheduled Task".
+                            </div>
+                            <input type="hidden" name="selected_ids" id="selectedIdsInput" value="">
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block mt-4"><i class="fa fa-plus-circle mr-1"></i> Initialize Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const targetTypeSelect = document.getElementById("targetTypeSelect");
+    const stateSelectionGroup = document.getElementById("stateSelectionGroup");
+    const selectedCollegesGroup = document.getElementById("selectedCollegesGroup");
+    
+    function toggleFields() {
+        const val = targetTypeSelect.value;
+        if (val === 'state') {
+            stateSelectionGroup.style.display = 'block';
+            selectedCollegesGroup.style.display = 'none';
+        } else if (val === 'selected') {
+            stateSelectionGroup.style.display = 'none';
+            selectedCollegesGroup.style.display = 'block';
+        } else {
+            stateSelectionGroup.style.display = 'none';
+            selectedCollegesGroup.style.display = 'none';
+        }
+    }
+    
+    // Listen to changes
+    targetTypeSelect.addEventListener("change", toggleFields);
+    
+    // Initial call
+    toggleFields();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,374 @@
+{
+  "schema_version": 1,
+  "kind": "index",
+  "source_path": "frontend/ideas/Dashboard ui kit/index.json",
+  "sha256_source": "8c6450f04ee9c84aa4a24f8687d329f416696ac2de08c10a04e390ff357672ff",
+  "generated_at": "2026-04-08T23:26:48.612793+00:00",
+  "title": "Eatio-Bootstrap-Dashboard",
+  "folder": "frontend/ideas/Dashboard ui kit",
+  "era_index": null,
+  "summary": null,
+  "status": "planned",
+  "children": [],
+  "navigation_tables": [],
+  "links": [
+    {
+      "text": "amcharts",
+      "href": "https://www.amcharts.com"
+    },
+    {
+      "text": "aos",
+      "href": "https://michalsnik.github.io/aos"
+    },
+    {
+      "text": "apexchart",
+      "href": "https://apexcharts.com"
+    },
+    {
+      "text": "bootstrap",
+      "href": "https://getbootstrap.com"
+    },
+    {
+      "text": "bootstrap4-notify",
+      "href": "http://bootstrap-notify.remabledesigns.com"
+    },
+    {
+      "text": "bootstrap-daterangepicker",
+      "href": "https://www.daterangepicker.com"
+    },
+    {
+      "text": "bootstrap-material-datetimepicker",
+      "href": "https://t00rk.github.io/bootstrap-material-datetimepicker"
+    },
+    {
+      "text": "bootstrap-multiselect",
+      "href": "https://github.com/davidstutz/bootstrap-multiselect"
+    },
+    {
+      "text": "bootstrap-select",
+      "href": "https://developer.snapappointments.com/bootstrap-select"
+    },
+    {
+      "text": "bootstrap-tagsinput",
+      "href": "https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples"
+    },
+    {
+      "text": "bootstrap-touchspin",
+      "href": "https://www.virtuosoft.eu/code/bootstrap-touchspin"
+    },
+    {
+      "text": "bootstrap-v4-rtl",
+      "href": "https://bootstrap.rtlcss.com"
+    },
+    {
+      "text": "chart.js",
+      "href": "https://www.chartjs.org"
+    },
+    {
+      "text": "chartist",
+      "href": "https://gionkunz.github.io/chartist-js"
+    },
+    {
+      "text": "chartist-plugin-tooltips",
+      "href": "https://github.com/tmmdata/chartist-plugin-tooltip"
+    },
+    {
+      "text": "clockpicker",
+      "href": "https://weareoutman.github.io/clockpicker"
+    },
+    {
+      "text": "datatables",
+      "href": "https://datatables.net"
+    },
+    {
+      "text": "dropzone",
+      "href": "https://www.dropzonejs.com"
+    },
+    {
+      "text": "flot",
+      "href": "https://www.flotcharts.org"
+    },
+    {
+      "text": "flot-spline",
+      "href": "https://github.com/miloszfalinski/jquery.flot.spline"
+    },
+    {
+      "text": "fullcalendar",
+      "href": "https://fullcalendar.io"
+    },
+    {
+      "text": "highlightjs",
+      "href": "https://highlightjs.org"
+    },
+    {
+      "text": "Twitter",
+      "href": "https://twitter.com/Klvnconrad"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "Eatio-Bootstrap-Dashboard",
+      "level": 1,
+      "slug": "eatio-bootstrap-dashboard",
+      "prose": ">Eatio- Restaurant Food Order Bootstrap Admin Dashboard\n\n<!-- [![NPM Version][npm-image]][npm-url]\n[![Build Status][travis-image]][travis-url]\n[![Downloads Stats][npm-downloads]][npm-url] -->\n\nEatio is a Free Bootstrap Restaurant Admin Template which will help you to speed up your project and design your own dashboard UI. Users will love it.\n\n![](header.png)",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [],
+      "links": []
+    },
+    {
+      "heading": "Installation",
+      "level": 2,
+      "slug": "installation",
+      "prose": "This section guides you to install all required software and libraries in order to fully utilize Eatio for your project",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [],
+      "links": []
+    },
+    {
+      "heading": "Install Node.js",
+      "level": 3,
+      "slug": "install-nodejs",
+      "prose": "Node.js® is a JavaScript runtime built on Chrome's V8 JavaScript engine. Node.js is required in order to run the Davur build tools. Download the latest version of Node and install it: nodejs.org/en/download/",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [],
+      "links": []
+    },
+    {
+      "heading": "Update your NPM",
+      "level": 3,
+      "slug": "update-your-npm",
+      "prose": "Npm is the package manager for JavaScript and the world’s largest software registry. Npm is a separate project from Node.js, and tends to update more frequently. As a result, even if you’ve just downloaded Node.js (and therefore npm), you’ll probably need to update your npm.\n\n```sh\nnpm install --global npm@latest\n```",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [
+        {
+          "lang": "sh",
+          "value": "npm install --global npm@latest\n"
+        }
+      ],
+      "links": []
+    },
+    {
+      "heading": "Install all dependencies",
+      "level": 3,
+      "slug": "install-all-dependencies",
+      "prose": "If you want to update or develop this theme, you need to install all dependencies by running:\nWindows:\n\n```sh\nnpm install\n```",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [
+        {
+          "lang": "sh",
+          "value": "npm install\n"
+        }
+      ],
+      "links": []
+    },
+    {
+      "heading": "Folder Directories -",
+      "level": 2,
+      "slug": "folder-directories--",
+      "prose": "1. css\n2. icons\n3. images\n4. js\n5. scss\n6. vendor\n7. index.html\n8. app-calender.html\n9. ...",
+      "tables": [],
+      "lists": [
+        {
+          "ordered": false,
+          "items": [
+            {
+              "text": "css",
+              "checked": null
+            },
+            {
+              "text": "icons",
+              "checked": null
+            },
+            {
+              "text": "images",
+              "checked": null
+            },
+            {
+              "text": "js",
+              "checked": null
+            },
+            {
+              "text": "scss",
+              "checked": null
+            },
+            {
+              "text": "vendor",
+              "checked": null
+            },
+            {
+              "text": "index.html",
+              "checked": null
+            },
+            {
+              "text": "app-calender.html",
+              "checked": null
+            },
+            {
+              "text": "...",
+              "checked": null
+            }
+          ]
+        }
+      ],
+      "code_blocks": [],
+      "links": []
+    },
+    {
+      "heading": "Plugins included",
+      "level": 2,
+      "slug": "plugins-included",
+      "prose": "[amcharts](https://www.amcharts.com)\n[aos](https://michalsnik.github.io/aos)\n[apexchart](https://apexcharts.com)\n[bootstrap](https://getbootstrap.com)\n[bootstrap4-notify](http://bootstrap-notify.remabledesigns.com)\n[bootstrap-daterangepicker](https://www.daterangepicker.com)\n[bootstrap-material-datetimepicker](https://t00rk.github.io/bootstrap-material-datetimepicker)\n[bootstrap-multiselect](https://github.com/davidstutz/bootstrap-multiselect)\n[bootstrap-select](https://developer.snapappointments.com/bootstrap-select)\n[bootstrap-tagsinput](https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples)\n[bootstrap-touchspin](https://www.virtuosoft.eu/code/bootstrap-touchspin)\n[bootstrap-v4-rtl](https://bootstrap.rtlcss.com)\n[chart.js](https://www.chartjs.org)\n[chartist](https://gionkunz.github.io/chartist-js)\n[chartist-plugin-tooltips](https://github.com/tmmdata/chartist-plugin-tooltip)\n[clockpicker](https://weareoutman.github.io/clockpicker)\n[datatables](https://datatables.net)\n[dropzone](https://www.dropzonejs.com)\n[flot](https://www.flotcharts.org)\n[flot-spline](https://github.com/miloszfalinski/jquery.flot.spline)\n[fullcalendar](https://fullcalendar.io)\n[highlightjs](https://highlightjs.org)",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [],
+      "links": [
+        {
+          "text": "amcharts",
+          "href": "https://www.amcharts.com"
+        },
+        {
+          "text": "aos",
+          "href": "https://michalsnik.github.io/aos"
+        },
+        {
+          "text": "apexchart",
+          "href": "https://apexcharts.com"
+        },
+        {
+          "text": "bootstrap",
+          "href": "https://getbootstrap.com"
+        },
+        {
+          "text": "bootstrap4-notify",
+          "href": "http://bootstrap-notify.remabledesigns.com"
+        },
+        {
+          "text": "bootstrap-daterangepicker",
+          "href": "https://www.daterangepicker.com"
+        },
+        {
+          "text": "bootstrap-material-datetimepicker",
+          "href": "https://t00rk.github.io/bootstrap-material-datetimepicker"
+        },
+        {
+          "text": "bootstrap-multiselect",
+          "href": "https://github.com/davidstutz/bootstrap-multiselect"
+        },
+        {
+          "text": "bootstrap-select",
+          "href": "https://developer.snapappointments.com/bootstrap-select"
+        },
+        {
+          "text": "bootstrap-tagsinput",
+          "href": "https://bootstrap-tagsinput.github.io/bootstrap-tagsinput/examples"
+        },
+        {
+          "text": "bootstrap-touchspin",
+          "href": "https://www.virtuosoft.eu/code/bootstrap-touchspin"
+        },
+        {
+          "text": "bootstrap-v4-rtl",
+          "href": "https://bootstrap.rtlcss.com"
+        },
+        {
+          "text": "chart.js",
+          "href": "https://www.chartjs.org"
+        },
+        {
+          "text": "chartist",
+          "href": "https://gionkunz.github.io/chartist-js"
+        },
+        {
+          "text": "chartist-plugin-tooltips",
+          "href": "https://github.com/tmmdata/chartist-plugin-tooltip"
+        },
+        {
+          "text": "clockpicker",
+          "href": "https://weareoutman.github.io/clockpicker"
+        },
+        {
+          "text": "datatables",
+          "href": "https://datatables.net"
+        },
+        {
+          "text": "dropzone",
+          "href": "https://www.dropzonejs.com"
+        },
+        {
+          "text": "flot",
+          "href": "https://www.flotcharts.org"
+        },
+        {
+          "text": "flot-spline",
+          "href": "https://github.com/miloszfalinski/jquery.flot.spline"
+        },
+        {
+          "text": "fullcalendar",
+          "href": "https://fullcalendar.io"
+        },
+        {
+          "text": "highlightjs",
+          "href": "https://highlightjs.org"
+        }
+      ]
+    },
+    {
+      "heading": "Creator",
+      "level": 2,
+      "slug": "creator",
+      "prose": "Kelvin Conrad – [Twitter](https://twitter.com/Klvnconrad) – klvnconrad@gmail.com",
+      "tables": [],
+      "lists": [],
+      "code_blocks": [],
+      "links": [
+        {
+          "text": "Twitter",
+          "href": "https://twitter.com/Klvnconrad"
+        }
+      ]
+    },
+    {
+      "heading": "Contributing",
+      "level": 2,
+      "slug": "contributing",
+      "prose": "1. Fork it (<https://github.com/kelvinconrad/Eatio-Bootstrap-Dashboard/fork>)\n2. Create your feature branch (`git checkout -b my-new-feature`)\n3. Commit your changes (`git commit -am 'Add some feature'`)\n4. Push to the branch (`git push origin my-new-feature`)\n5. Create a new Pull Request",
+      "tables": [],
+      "lists": [
+        {
+          "ordered": false,
+          "items": [
+            {
+              "text": "Fork it (<https://github.com/kelvinconrad/Eatio-Bootstrap-Dashboard/fork>)",
+              "checked": null
+            },
+            {
+              "text": "Create your feature branch (`git checkout -b my-new-feature`)",
+              "checked": null
+            },
+            {
+              "text": "Commit your changes (`git commit -am 'Add some feature'`)",
+              "checked": null
+            },
+            {
+              "text": "Push to the branch (`git push origin my-new-feature`)",
+              "checked": null
+            },
+            {
+              "text": "Create a new Pull Request",
+              "checked": null
+            }
+          ]
+        }
+      ],
+      "code_blocks": [],
+      "links": []
+    }
+  ],
+  "updated_at": "2026-04-13T22:03:04.593062+00:00",
+  "non_parsed_raw_markdown": ""
+}

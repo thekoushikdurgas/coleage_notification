@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "index",
+  "source_path": "frontend/ideas/Dashboard ui kit/vendor/dropzone/index.json",
+  "sha256_source": "27f5c0a03d8548bc5b546e447f1bb8d4377a1d187c3cf9e92763fc883c92d338",
+  "generated_at": "2026-04-08T23:26:48.662776+00:00",
+  "title": "",
+  "folder": "frontend/ideas/Dashboard ui kit/vendor/dropzone",
+  "era_index": null,
+  "summary": null,
+  "status": "planned",
+  "children": [
+    {
+      "title": "",
+      "path": "CONTRIBUTING.json",
+      "kind": "document",
+      "version": null,
+      "status": null
+    }
+  ],
+  "navigation_tables": [],
+  "links": [
+    {
+      "text": "stackoverflow",
+      "href": "http://stackoverflow.com/"
+    },
+    {
+      "text": "contributing guidelines",
+      "href": "CONTRIBUTING.md"
+    },
+    {
+      "text": "gitlab.com",
+      "href": "https://gitlab.com/meno/dropzone"
+    }
+  ],
+  "sections": [
+    {
+      "heading": "",
+      "level": 0,
+      "slug": "",
+      "prose": "<img alt=\"Dropzone.js\" src=\"http://www.dropzonejs.com/images/new-logo.svg\" />\n\nDropzone.js is a light weight JavaScript library that turns an HTML element into a dropzone.\nThis means that a user can drag and drop a file onto it, and the file gets uploaded to the server via AJAX.\n\n* * *\n\n_If you want support, please use [stackoverflow](http://stackoverflow.com/) with the `dropzone.js` tag and not the\nGitHub issues tracker. Only post an issue here if you think you discovered a bug or have a feature request._\n\n* * *\n\n**Please read the [contributing guidelines](CONTRIBUTING.md) before you start working on Dropzone!**\n\n<br>\n<div align=\"center\">\n  <a href=\"https://gitlab.com/meno/dropzone/builds/artifacts/master/download?job=release\"><strong>&gt;&gt; Download &lt;&lt;</strong></a>\n</div>\n<br>\n<br>\n\nThis is no longer the official repository for Dropzone. I have switched to [gitlab.com](https://gitlab.com/meno/dropzone)\nas the primary location to continue development.\n \nThere are multiple reasons why I am switching from GitHub to GitLab, but a few of the reasons are the\nissue tracker that GitHub is providing, *drowning* me in issues that I am unable to categorise or prioritize properly,\nthe lack of proper continuous integration, and build files. I don't want the compiled `.js` files in my repository, and\npeople regularly commit changes to the compiled files and create pull requests with them.\n\nI will write a blog post soon, that goes into detail about why I am doing the switch.\n\nThis repository will still remain, and always host the most up to date versions of dropzone, but only the distribution\nfiles!\n\nMIT License\n-----------",
+      "tables": [],
+      "lists": [
+        {
+          "ordered": false,
+          "items": [
+            {
+              "text": "* *",
+              "checked": null
+            },
+            {
+              "text": "* *",
+              "checked": null
+            }
+          ]
+        }
+      ],
+      "code_blocks": [],
+      "links": [
+        {
+          "text": "stackoverflow",
+          "href": "http://stackoverflow.com/"
+        },
+        {
+          "text": "contributing guidelines",
+          "href": "CONTRIBUTING.md"
+        },
+        {
+          "text": "gitlab.com",
+          "href": "https://gitlab.com/meno/dropzone"
+        }
+      ]
+    }
+  ],
+  "updated_at": "2026-04-13T22:03:04.617662+00:00",
+  "non_parsed_raw_markdown": ""
+}

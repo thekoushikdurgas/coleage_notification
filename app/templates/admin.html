@@ -1,0 +1,1043 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Portal | FormsADDA Control Center{% endblock %}
+
+{% block content %}
+<style>
+.border-left-primary { border-left: 4px solid #2f4cdd !important; }
+.border-left-warning { border-left: 4px solid #ffaa2b !important; }
+.border-left-success { border-left: 4px solid #2bc155 !important; }
+</style>
+<div class="form-head d-flex mb-4 align-items-start">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">Management Portal</h2>
+        <p class="mb-0 text-muted">Control scraper operations, review crawled content, and manage student notification logs.</p>
+    </div>
+    <div class="ml-auto d-flex align-items-center" style="gap:10px;">
+        <!-- Auto-Approve Toggle -->
+        <form action="{{ url_for('main.toggle_auto_approve') }}" method="POST" class="d-flex align-items-center" style="background:#fff;border-radius:10px;padding:6px 12px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border:1px solid #f1f3f9;gap:8px;">
+            <span class="font-weight-bold text-dark" style="font-size:12.5px;"><i class="fa fa-robot text-primary mr-1"></i>Auto-Approve:</span>
+            {% if auto_approve_enabled %}
+                <button type="submit" class="btn btn-success btn-xs px-3 d-flex align-items-center" style="gap:5px;border-radius:8px;font-weight:700;">
+                    <i class="fa fa-toggle-on" style="font-size:14px;"></i> ON
+                </button>
+            {% else %}
+                <button type="submit" class="btn btn-light btn-xs px-3 border text-muted d-flex align-items-center" style="gap:5px;border-radius:8px;font-weight:700;">
+                    <i class="fa fa-toggle-off" style="font-size:14px;"></i> OFF
+                </button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Stats Dashboard Counters Row -->
+<div class="row">
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="widget-stat card bg-primary">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-university" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1">Tracked Colleges</p>
+                        <h3 class="text-white">{{ total_colleges }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="widget-stat card bg-warning">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-chalkboard" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1">Tracked Boards</p>
+                        <h3 class="text-white">{{ total_boards }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="widget-stat card bg-secondary">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-balance-scale" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1">Regulatory Bodies</p>
+                        <h3 class="text-white">{{ total_regulators }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="widget-stat card bg-success">
+            <div class="card-body p-4">
+                <div class="media">
+                    <span class="mr-3">
+                        <i class="la la-paper-plane" style="font-size: 32px; color: #fff;"></i>
+                    </span>
+                    <div class="media-body text-white">
+                        <p class="mb-1">Alerts Dispatched</p>
+                        <h3 class="text-white">{{ total_alerts }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Pipeline Stats Row -->
+<div class="row mb-2">
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card border-left-success shadow-sm mb-0">
+            <div class="card-body py-3 d-flex align-items-center">
+                <div class="rounded-circle bg-success d-flex align-items-center justify-content-center mr-3" style="width: 44px; height: 44px; min-width: 44px;">
+                    <i class="fa fa-check-circle text-white" style="font-size: 18px;"></i>
+                </div>
+                <div>
+                    <p class="mb-0 text-muted" style="font-size:11px; text-transform: uppercase; letter-spacing: 0.5px;">Published</p>
+                    <h4 class="mb-0 text-black font-weight-bold">{{ total_published }}</h4>
+                </div>
+                <div class="ml-auto">
+                    <a href="{{ url_for('main.index') }}" class="btn btn-success btn-xs" title="View on public feed">
+                        <i class="fa fa-external-link-alt"></i> View
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card border-left-warning shadow-sm mb-0">
+            <div class="card-body py-3 d-flex align-items-center">
+                <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center mr-3" style="width: 44px; height: 44px; min-width: 44px;">
+                    <i class="fa fa-clock text-white" style="font-size: 18px;"></i>
+                </div>
+                <div>
+                    <p class="mb-0 text-muted" style="font-size:11px; text-transform: uppercase; letter-spacing: 0.5px;">Awaiting Review</p>
+                    <h4 class="mb-0 text-black font-weight-bold">{{ total_pending }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card border-left-primary shadow-sm mb-0">
+            <div class="card-body py-3 d-flex align-items-center">
+                <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center mr-3" style="width: 44px; height: 44px; min-width: 44px;">
+                    <i class="fa fa-copy text-white" style="font-size: 18px;"></i>
+                </div>
+                <div>
+                    <p class="mb-0 text-muted" style="font-size:11px; text-transform: uppercase; letter-spacing: 0.5px;">Duplicates Filtered</p>
+                    <h4 class="mb-0 text-black font-weight-bold">{{ total_duplicates }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card border-left-primary shadow-sm mb-0" style="border-left-color: #6c757d !important;">
+            <div class="card-body py-3 d-flex align-items-center">
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mr-3" style="width: 44px; height: 44px; min-width: 44px;">
+                    <i class="fa fa-database text-white" style="font-size: 18px;"></i>
+                </div>
+                <div>
+                    <p class="mb-0 text-muted" style="font-size:11px; text-transform: uppercase; letter-spacing: 0.5px;">Total Scraped</p>
+                    <h4 class="mb-0 text-black font-weight-bold">{{ total_notifs }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row mb-4">
+    <div class="col-xl-4 col-md-6 col-sm-12 mb-3 mb-md-0">
+        <div class="card mb-0 border-left-primary worker-status-card" style="border-radius:14px !important;">
+            <div class="card-body py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center" style="gap:14px;">
+                    <div class="worker-icon-wrap primary">
+                        <i id="scraper-status-spinner" class="fa fa-spider"></i>
+                    </div>
+                    <div>
+                        <div class="text-black font-weight-bold" style="font-size:13.5px;">Scraper Worker</div>
+                        <span id="scraper-status-text" class="badge badge-light text-muted" style="font-size:11px;">Checking...</span>
+                    </div>
+                </div>
+                <small id="scraper-target" class="text-muted font-weight-bold text-truncate" style="font-size:10.5px;max-width:120px;"></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-6 col-sm-12 mb-3 mb-md-0">
+        <div class="card mb-0 border-left-warning worker-status-card" style="border-radius:14px !important;">
+            <div class="card-body py-3 px-4 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center" style="gap:14px;">
+                    <div class="worker-icon-wrap warning">
+                        <i id="loader-status-spinner" class="fa fa-cog"></i>
+                    </div>
+                    <div>
+                        <div class="text-black font-weight-bold" style="font-size:13.5px;">Loader Worker</div>
+                        <span id="loader-status-text" class="badge badge-light text-muted" style="font-size:11px;">Checking...</span>
+                    </div>
+                </div>
+                <small id="loader-target" class="text-muted font-weight-bold text-truncate" style="font-size:10.5px;max-width:120px;"></small>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-md-12 col-sm-12">
+        <div class="card mb-0 border-left-success worker-status-card" style="border-radius:14px !important;">
+            <div class="card-body py-3 px-4 d-flex align-items-center" style="gap:14px;">
+                <div class="worker-icon-wrap success">
+                    <i class="fa fa-layer-group"></i>
+                </div>
+                <div>
+                    <div class="text-black font-weight-bold" style="font-size:13.5px;">Pipeline Queue</div>
+                    <span id="queue-status-text" class="badge badge-success text-white" style="font-size:11px;">0 pending</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Operations Terminal & Sources Registry -->
+    <div class="col-xl-8 col-xxl-8 col-lg-12">
+        <!-- Scraper Terminal Simulator -->
+        <div class="card" style="border-radius:14px !important;">
+            <div class="card-header border-0 pb-0">
+                <div class="d-flex align-items-center" style="gap:10px;">
+                    <div class="terminal-dots">
+                        <div class="terminal-dot terminal-dot-red"></div>
+                        <div class="terminal-dot terminal-dot-yellow"></div>
+                        <div class="terminal-dot terminal-dot-green"></div>
+                    </div>
+                    <h4 class="card-title mb-0" style="font-family:'Outfit',sans-serif;font-size:15px;"><i class="fa fa-terminal text-primary mr-2"></i>Real-Time Scraper Console</h4>
+                </div>
+                <button onclick="triggerBulkCrawl()" class="btn btn-primary btn-sm" style="border-radius:8px;font-weight:600;">
+                    <i class="fa fa-rotate mr-1"></i> Bulk Crawl (5 Orgs)
+                </button>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-2" style="font-size:12.5px;">Execute simulated crawl jobs. Terminal outputs change detection, AI extraction, and article creation results.</p>
+                <div class="log-terminal" id="terminal-logs">
+                    <div class="terminal-line system-line">[SYSTEM] Terminal initialized. Awaiting crawl triggers...</div>
+                    <div class="terminal-line info-line">[INFO] SQLite active — {{ total_colleges + total_boards + total_regulators }} registered sources loaded.</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Source Registry Grid -->
+        <div class="card">
+            <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h4 class="card-title">Source Registry</h4>
+                <form action="{{ url_for('main.admin_dashboard') }}" method="GET" class="d-flex" role="search" aria-label="Source Registry Search">
+                    <input type="text" name="org_q" class="form-control form-control-sm mr-2" value="{{ org_search or '' }}" placeholder="Search name..." aria-label="Search organization name">
+                    <button type="submit" class="btn btn-secondary btn-sm" aria-label="Submit search"><i class="fa fa-search"></i></button>
+                    {% if org_search %}
+                        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary btn-sm ml-1" aria-label="Clear search"><i class="fa fa-times"></i></a>
+                    {% endif %}
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-responsive-md table-hover">
+                        <thead>
+                            <tr>
+                                <th><strong>Organization Name</strong></th>
+                                <th><strong>Category</strong></th>
+                                <th><strong>State</strong></th>
+                                <th><strong>Action</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for org in organizations %}
+                                <tr>
+                                    <td style="max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <strong>{{ org.name }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if org.category == 'college' %}
+                                            <span class="badge badge-outline-primary">College</span>
+                                        {% elif org.category == 'board' %}
+                                            <span class="badge badge-outline-warning">Board</span>
+                                        {% else %}
+                                            <span class="badge badge-outline-success">Regulator</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ org.state or 'N/A' }}</td>
+                                    <td>
+                                        <button onclick="triggerSimulatedCrawl({{ org.id }}, '{{ org.name|escape }}')" class="btn btn-primary btn-xs sharp"><i class="fa fa-spider"></i> Crawl</button>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No organizations match filter criteria.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <small class="text-muted mt-2 d-block">Showing first 50 results. Use the search input to filter items.</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Moderation Summary + Logs -->
+    <div class="col-xl-4 col-xxl-4 col-lg-12">
+        <!-- Moderation Queue Summary Card -->
+        <div class="card" id="moderation-summary-card">
+            <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+                <h4 class="card-title">
+                    <i class="fa fa-inbox text-warning mr-1"></i> Pending Queue
+                    <span id="pending-badge-count" class="badge badge-warning ml-1">{{ total_pending }}</span>
+                </h4>
+                {% if moderation_queue %}
+                    <form action="{{ url_for('main.approve_all_notifications') }}" method="POST" style="display: inline;">
+                        <button type="submit" class="btn btn-success btn-xs" onclick="return confirm('Approve all pending notifications?')">
+                            <i class="fa fa-check-double"></i> Approve All
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="moderation-list-wrapper">
+                    <div class="text-center py-4 text-muted empty-queue-state" {% if moderation_queue %}style="display:none;"{% endif %}>
+                        <i class="fa fa-check-circle text-success" style="font-size: 28px;"></i>
+                        <p class="mt-2 mb-0">Queue is clean.</p>
+                    </div>
+                    <div class="moderation-list" style="max-height: 260px; overflow-y: auto; {% if not moderation_queue %}display:none;{% endif %}">
+                        {% for notif in moderation_queue %}
+                            <div class="d-flex align-items-start py-2 border-bottom" id="sidebar-notif-{{ notif.id }}">
+                                <span class="badge {{ notif.category|badge_class }} mr-2 mt-1" style="min-width:56px; text-align:center;">{{ notif.category }}</span>
+                                <div class="flex-grow-1" style="min-width:0;">
+                                    <div class="text-black font-weight-bold" style="font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{{ notif.title }}">{{ notif.title[:55] }}{% if notif.title|length > 55 %}...{% endif %}</div>
+                                    <small class="text-muted">{{ notif.organization.name[:30] }}</small>
+                                </div>
+                                <button class="btn btn-success btn-xs ml-2 mt-1 flex-shrink-0" onclick="quickApprove({{ notif.id }}, this)" title="Approve" aria-label="Quick approve notification"><i class="fa fa-check"></i></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if total_pending > 0 %}
+                <div class="mt-3 text-center">
+                    <a href="#review-panel" class="btn btn-outline-warning btn-sm" onclick="document.getElementById('review-panel').scrollIntoView({behavior:'smooth'}); return false;">
+                        <i class="fa fa-list-check mr-1"></i> Full Review Panel <i class="fa fa-arrow-down ml-1"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Live Crawler History -->
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Crawl Activity Log</h4>
+            </div>
+            <div class="card-body">
+                <div class="crawl-history-list" style="max-height: 320px; overflow-y: auto;">
+                    {% for log in recent_crawls %}
+                        <div class="pb-3 mb-3 border-bottom" style="font-size: 12px;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="font-weight-bold">{{ log.organization.name[:32] }}...</span>
+                                <small class="text-muted">{{ log.crawled_at.strftime("%I:%M:%S %p") }}</small>
+                            </div>
+                            <div>
+                                Status: 
+                                {% if log.status == 'success' %}
+                                    <span class="text-success font-weight-bold">Success</span> - 
+                                    {% if log.detected_changes %}New announcement found!{% else %}No updates.{% endif %}
+                                {% else %}
+                                    <span class="text-danger font-weight-bold">Failed</span>: {{ log.error_message }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted">No crawl activity recorded yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =====================================================================
+     FULL-WIDTH PENDING NOTIFICATIONS REVIEW PANEL
+     ===================================================================== -->
+<div class="row mt-3" id="review-panel">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <!-- Panel Header -->
+            <div class="card-header border-0 pb-0 d-flex flex-wrap align-items-center" style="gap:10px;">
+                <div class="mr-auto">
+                    <h4 class="card-title mb-0" style="font-family:'Outfit',sans-serif;">
+                        <i class="fa fa-clipboard-list text-warning mr-2"></i>
+                        Pending Notifications Review
+                        <span id="review-total-badge" class="badge badge-warning ml-2" style="font-size:13px;">{{ total_pending }}</span>
+                    </h4>
+                    <p class="text-muted mb-0 mt-1" style="font-size:12px;">Review, preview, and approve or discard scraped notifications before they go live.</p>
+                </div>
+                <div class="d-flex align-items-center" style="gap:8px;flex-wrap:wrap;">
+                    <!-- Search -->
+                    <div class="input-group input-group-sm" style="width:220px;">
+                        <input type="text" id="review-search-input" class="form-control" placeholder="Search title or org..." oninput="debounceSearch()" style="border-radius:8px 0 0 8px;" aria-label="Search pending notifications">
+                        <div class="input-group-append">
+                            <span class="input-group-text bg-white" style="border-radius:0 8px 8px 0;"><i class="fa fa-search text-muted"></i></span>
+                        </div>
+                    </div>
+                    <!-- Approve All AJAX Button -->
+                    <button id="approve-all-btn" class="btn btn-success btn-sm" onclick="approveAllAjax()" {% if total_pending == 0 %}disabled{% endif %} style="border-radius:8px;font-weight:600;">
+                        <i class="fa fa-check-double mr-1"></i> Approve All
+                    </button>
+                    <!-- Refresh -->
+                    <button class="btn btn-light btn-sm border" onclick="loadPendingPage(currentPage)" style="border-radius:8px;" aria-label="Refresh pending notifications list">
+                        <i class="fa fa-rotate-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Quick Filters -->
+            <div class="px-4 py-2 border-bottom d-flex align-items-center flex-wrap" style="gap:8px;background:#f7f8fc;">
+                <span style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-right:4px;">Filter:</span>
+                <button class="cat-filter-btn active" onclick="filterCategory('', this)">All</button>
+                <button class="cat-filter-btn admission" onclick="filterCategory('admission', this)">Admission</button>
+                <button class="cat-filter-btn exam" onclick="filterCategory('exam', this)">Exam</button>
+                <button class="cat-filter-btn result" onclick="filterCategory('result', this)">Result</button>
+                <button class="cat-filter-btn scholarship" onclick="filterCategory('scholarship', this)">Scholarship</button>
+                <button class="cat-filter-btn policy" onclick="filterCategory('policy', this)">Policy</button>
+                <div class="ml-auto">
+                    <i class="fa fa-triangle-exclamation text-warning mr-1"></i>
+                    <span id="review-info-text" class="text-muted" style="font-size:12px;">Loading pending notifications...</span>
+                </div>
+            </div>
+
+            <!-- Notifications Table -->
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="review-table">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width:36px;" class="pl-4"><input type="checkbox" id="select-all-chk" onclick="toggleSelectAll(this)" title="Select all" aria-label="Select all notifications"></th>
+                                <th style="min-width:280px;">Notification</th>
+                                <th style="width:140px;">Organization</th>
+                                <th style="width:90px;">Category</th>
+                                <th style="width:100px;">Key Dates</th>
+                                <th style="width:140px;">Scraped At</th>
+                                <th style="width:160px; text-align:right;" class="pr-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="review-table-body">
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <div class="spinner-border spinner-border-sm text-primary mr-2" role="status"></div>
+                                    Loading notifications...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination Footer -->
+            <div class="card-footer d-flex justify-content-between align-items-center py-2" id="review-pagination-wrapper" style="display:none !important;">
+                <small class="text-muted" id="review-page-info"></small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="review-pagination"></ul>
+                </nav>
+            </div>
+
+            <!-- Bulk Actions Bar (appears when rows selected) -->
+            <div id="bulk-actions-bar" class="px-4 py-2 border-top bg-light d-flex align-items-center" style="display:none !important; gap: 10px;">
+                <span class="text-black font-weight-bold" style="font-size:13px;"><span id="selected-count">0</span> selected</span>
+                <button class="btn btn-success btn-sm" onclick="bulkApproveSelected()"><i class="fa fa-check mr-1"></i> Approve Selected</button>
+                <button class="btn btn-danger btn-sm" onclick="bulkRejectSelected()"><i class="fa fa-trash mr-1"></i> Discard Selected</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    function addTerminalLine(text, type = 'info') {
+        const terminal = document.getElementById('terminal-logs');
+        const line = document.createElement('div');
+        const now = new Date().toLocaleTimeString();
+        line.className = `terminal-line ${type}-line`;
+        line.innerHTML = `[${now}] ${text}`;
+        terminal.appendChild(line);
+        
+        // Cap logs to 200 elements to prevent DOM slowdown
+        while (terminal.children.length > 200) {
+            terminal.removeChild(terminal.firstChild);
+        }
+        
+        terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    // Connect to Server-Sent Events stream for background workers progress & live dashboard updates
+    const eventSource = new EventSource('/admin/stream-events');
+    
+    eventSource.addEventListener('status', function(event) {
+        const status = JSON.parse(event.data);
+        
+        // Update Scraper status card
+        const scraperText = document.getElementById('scraper-status-text');
+        const scraperSpinner = document.getElementById('scraper-status-spinner');
+        const scraperTarget = document.getElementById('scraper-target');
+        
+        if (status.scraper.status === 'Active') {
+            scraperText.className = 'badge badge-primary text-white';
+            scraperText.textContent = 'Scraping';
+            scraperSpinner.classList.add('fa-spin');
+            scraperTarget.textContent = status.scraper.target || '';
+            scraperTarget.title = status.scraper.target || '';
+        } else {
+            scraperText.className = 'badge badge-light text-muted';
+            scraperText.textContent = 'Idle';
+            scraperSpinner.classList.remove('fa-spin');
+            scraperTarget.textContent = '';
+        }
+        
+        // Update Loader status card
+        const loaderText = document.getElementById('loader-status-text');
+        const loaderSpinner = document.getElementById('loader-status-spinner');
+        const loaderTarget = document.getElementById('loader-target');
+        
+        if (status.loader.status === 'Active') {
+            loaderText.className = 'badge badge-warning text-white';
+            loaderText.textContent = 'Processing';
+            loaderSpinner.classList.add('fa-spin');
+            loaderTarget.textContent = status.loader.target || '';
+            loaderTarget.title = status.loader.target || '';
+        } else {
+            loaderText.className = 'badge badge-light text-muted';
+            loaderText.textContent = 'Idle';
+            loaderSpinner.classList.remove('fa-spin');
+            loaderTarget.textContent = '';
+        }
+        
+        // Update Queue status card
+        const queueText = document.getElementById('queue-status-text');
+        if (status.total_backlog > 0) {
+            queueText.className = 'badge badge-danger text-white';
+            queueText.textContent = status.total_backlog + ' pending';
+        } else {
+            queueText.className = 'badge badge-success text-white';
+            queueText.textContent = '0 pending';
+        }
+    });
+
+    eventSource.addEventListener('log', function(event) {
+        const logData = JSON.parse(event.data);
+        addTerminalLine(logData.message, logData.log_type);
+    });
+
+    eventSource.addEventListener('crawler_log', function(event) {
+        const log = JSON.parse(event.data);
+        const container = document.querySelector('.crawl-history-list');
+        if (!container) return;
+        
+        // Remove empty state placeholder
+        const emptyState = container.querySelector('.text-center');
+        if (emptyState && emptyState.textContent.includes('No crawl activity')) {
+            emptyState.remove();
+        }
+        
+        const logDiv = document.createElement('div');
+        logDiv.className = 'pb-3 mb-3 border-bottom fade-in';
+        logDiv.style.fontSize = '12px';
+        
+        let statusHtml = '';
+        if (log.status === 'success') {
+            statusHtml = `<span class="text-success font-weight-bold">Success</span> - ` + 
+                         (log.detected_changes ? 'New announcement found!' : 'No updates.');
+        } else {
+            statusHtml = `<span class="text-danger font-weight-bold">Failed</span>: ${log.error_message}`;
+        }
+        
+        logDiv.innerHTML = `
+            <div class="d-flex justify-content-between mb-1">
+                <span class="font-weight-bold">${log.organization_name.substring(0, 32)}...</span>
+                <small class="text-muted">${log.crawled_at}</small>
+            </div>
+            <div>
+                Status: ${statusHtml}
+            </div>
+        `;
+        
+        container.insertBefore(logDiv, container.firstChild);
+        
+        // Keep logs capped at 50 elements
+        while (container.children.length > 50) {
+            container.removeChild(container.lastChild);
+        }
+    });
+
+    eventSource.addEventListener('notification', function(event) {
+        const notif = JSON.parse(event.data);
+        
+        const wrapper = document.querySelector('.moderation-list-wrapper');
+        const emptyState = wrapper.querySelector('.empty-queue-state');
+        const list = wrapper.querySelector('.moderation-list');
+        const cardHeader = document.querySelector('.moderation-list-wrapper').closest('.card').querySelector('.card-header');
+        
+        emptyState.style.display = 'none';
+        list.style.display = 'block';
+        
+        // Show the "Approve All" button in the card header if not already present
+        if (!cardHeader.querySelector('.approve-all-btn-form')) {
+            const approveAllForm = document.createElement('form');
+            approveAllForm.action = '/admin/approve-all';
+            approveAllForm.method = 'POST';
+            approveAllForm.className = 'approve-all-btn-form d-inline';
+            approveAllForm.innerHTML = `<button type="submit" class="btn btn-success btn-xs" onclick="return confirm('Approve all pending notifications?')"><i class="fa fa-check-double"></i> Approve All</button>`;
+            cardHeader.appendChild(approveAllForm);
+        }
+        
+        const card = document.createElement('div');
+        card.className = 'p-3 mb-3 border rounded bg-light fade-in';
+        card.style.borderColor = 'rgba(0,0,0,0.05) !important;';
+        
+        const categories = {
+            'admission': 'badge-admission',
+            'exam': 'badge-exam',
+            'result': 'badge-result',
+            'policy': 'badge-policy',
+            'scholarship': 'badge-scholarship',
+            'other': 'badge-other'
+        };
+        const badgeClass = categories[notif.category.toLowerCase()] || 'badge-other';
+        
+        card.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <small class="text-primary font-weight-bold" style="max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${notif.organization_name}">${notif.organization_name}</small>
+                <span class="badge ${badgeClass}">${notif.category}</span>
+            </div>
+            <h6 class="text-black mb-3" style="font-size: 13px; line-height: 1.4;">${notif.title}</h6>
+            <div class="d-flex gap-2">
+                <form action="/admin/approve/${notif.id}" method="POST" class="mr-2">
+                    <button type="submit" class="btn btn-success btn-xs"><i class="fa fa-check"></i> Approve</button>
+                </form>
+                <form action="/admin/reject/${notif.id}" method="POST">
+                    <button type="submit" class="btn btn-danger btn-xs" onclick="return confirm('Delete this notification?')"><i class="fa fa-trash"></i> Discard</button>
+                </form>
+            </div>
+        `;
+        
+        list.insertBefore(card, list.firstChild);
+    });
+
+    function triggerSimulatedCrawl(orgId, orgName) {
+        addTerminalLine(`Initiating crawl command for source: "${orgName}"`, 'system');
+        
+        fetch(`/admin/crawl/${orgId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.new_changes) {
+                    addTerminalLine(`[SUCCESS] Crawl completed for "${orgName}".`, 'success');
+                    if (data.is_duplicate) {
+                        addTerminalLine(`[DUPLICATE DETECTED] Announcement "${data.title}" matches existing record. Flagged as duplicate.`, 'warning');
+                    } else {
+                        addTerminalLine(`[NEW CHANGES] Found new announcement: "${data.title}"`, 'success');
+                        addTerminalLine(`[AI ENGINE] Extracted structured timeline schedules & criteria.`, 'info');
+                        addTerminalLine(`[AI CONTENT] Generated news article, meta keywords, and alert templates.`, 'info');
+                        addTerminalLine(`[WORKFLOW] Placed in Pending Queue for admin review.`, 'system');
+                        // Reload the review panel to show the new item
+                        setTimeout(() => loadPendingPage(1), 1500);
+                    }
+                } else {
+                    addTerminalLine(`[CRAWLED] Completed crawl for "${orgName}". No new changes detected.`, 'info');
+                }
+            } else {
+                addTerminalLine(`[ERROR] Crawl run failed: ${data.message}`, 'error');
+            }
+        })
+        .catch(err => {
+            addTerminalLine(`[ERROR] Network error during crawl request: ${err}`, 'error');
+        });
+    }
+
+    function triggerBulkCrawl() {
+        addTerminalLine(`Initiating bulk crawl for 5 random registered organizations...`, 'system');
+        
+        fetch('/admin/bulk-crawl', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                addTerminalLine(`[SUCCESS] Bulk crawl finished. Checked 5 sources.`, 'success');
+                addTerminalLine(`[SUCCESS] Ingested ${data.new_notifications} new announcements.`, 'success');
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        let logType = log.includes('New') ? 'success' : 'info';
+                        addTerminalLine(`  > ${log}`, logType);
+                    });
+                }
+                // Reload review panel after crawl
+                setTimeout(() => loadPendingPage(1), 2000);
+            } else {
+                addTerminalLine(`[ERROR] Bulk crawl failed: ${data.message}`, 'error');
+            }
+        })
+        .catch(err => {
+            addTerminalLine(`[ERROR] Network error during bulk crawl: ${err}`, 'error');
+        });
+    }
+
+    // ================================================================
+    //  REVIEW PANEL: AJAX-Driven Pending Notifications Table
+    // ================================================================
+
+    let currentPage = 1;
+    let searchDebounceTimer = null;
+    const BADGE_CLASSES = {
+        'admission': 'badge-primary',
+        'exam': 'badge-warning',
+        'result': 'badge-success',
+        'policy': 'badge-secondary',
+        'scholarship': 'badge-info',
+        'other': 'badge-light'
+    };
+
+    function getBadgeClass(cat) {
+        return BADGE_CLASSES[cat.toLowerCase()] || 'badge-light';
+    }
+
+    function escHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(str));
+        return d.innerHTML;
+    }
+
+    function updateCounters(total) {
+        // Update all badge/counter elements across the dashboard
+        document.querySelectorAll('#pending-badge-count, #review-total-badge').forEach(el => {
+            el.textContent = total;
+            el.className = total > 0 ? 'badge badge-warning ml-1' : 'badge badge-success ml-1';
+        });
+        // Update info bar
+        const infoEl = document.getElementById('review-info-text');
+        if (total === 0) {
+            infoEl.innerHTML = '<span class="text-success font-weight-bold"><i class="fa fa-check-circle mr-1"></i>All caught up! No pending notifications.</span>';
+            document.getElementById('approve-all-btn').disabled = true;
+        } else {
+            infoEl.innerHTML = `<strong>${total}</strong> notification${total !== 1 ? 's' : ''} awaiting your review. Approve to publish to the public feed, or discard to remove.`;
+            document.getElementById('approve-all-btn').disabled = false;
+        }
+    }
+
+    function renderRows(items) {
+        const tbody = document.getElementById('review-table-body');
+        if (!items || items.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-5">
+                        <i class="fa fa-check-circle text-success" style="font-size:36px;"></i>
+                        <p class="text-muted mt-3 mb-0">No pending notifications found.</p>
+                        <small class="text-muted">Run a crawl above to scrape new announcements.</small>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = items.map(n => {
+            const badgeCls = getBadgeClass(n.category);
+            const orgCatBadge = n.organization_category === 'college' ? 'badge-outline-primary' :
+                                n.organization_category === 'board' ? 'badge-outline-warning' : 'badge-outline-success';
+
+            const keyDates = [];
+            if (n.application_end_date) keyDates.push(`<span class="text-danger" style="font-size:11px;" title="Last date"><i class="fa fa-calendar-xmark mr-1"></i>${escHtml(n.application_end_date)}</span>`);
+            if (n.exam_date) keyDates.push(`<span class="text-primary" style="font-size:11px;" title="Exam date"><i class="fa fa-pen-to-square mr-1"></i>${escHtml(n.exam_date)}</span>`);
+            if (n.application_start_date && !n.application_end_date) keyDates.push(`<span class="text-success" style="font-size:11px;" title="Start date"><i class="fa fa-calendar-check mr-1"></i>${escHtml(n.application_start_date)}</span>`);
+
+            const contentIndicator = n.has_content
+                ? `<span class="badge badge-light text-success" title="AI content ready"><i class="fa fa-wand-magic-sparkles"></i> AI Ready</span>`
+                : `<span class="badge badge-light text-muted" title="Content processing"><i class="fa fa-circle-notch fa-spin"></i> Processing</span>`;
+
+            const sourceLink = n.source_url
+                ? `<a href="${escHtml(n.source_url)}" target="_blank" class="text-muted" style="font-size:10px;" title="Source URL"><i class="fa fa-external-link-alt mr-1"></i>Source</a>`
+                : '';
+
+            return `<tr id="row-${n.id}" class="fade-in">
+                <td class="pl-4 align-middle">
+                    <input type="checkbox" class="row-checkbox" value="${n.id}" onchange="updateBulkBar()">
+                </td>
+                <td class="align-middle" style="max-width:320px;">
+                    <div class="font-weight-bold text-black mb-1" style="font-size:13px; line-height:1.3;" title="${escHtml(n.title)}">${escHtml(n.title)}</div>
+                    <div class="text-muted" style="font-size:11px; line-height:1.4;">${escHtml(n.body_preview)}</div>
+                    <div class="mt-1 d-flex align-items-center" style="gap:8px;">${contentIndicator} ${sourceLink}</div>
+                </td>
+                <td class="align-middle">
+                    <div class="font-weight-bold text-black" style="font-size:12px;" title="${escHtml(n.organization_name)}">${escHtml(n.organization_name.length > 32 ? n.organization_name.substring(0,32)+'…' : n.organization_name)}</div>
+                    <span class="badge ${orgCatBadge} mt-1" style="font-size:10px;">${escHtml(n.organization_category)}</span>
+                    ${n.organization_state ? `<div class="text-muted mt-1" style="font-size:10px;"><i class="fa fa-map-pin mr-1"></i>${escHtml(n.organization_state)}</div>` : ''}
+                </td>
+                <td class="align-middle"><span class="badge ${badgeCls}">${escHtml(n.category)}</span></td>
+                <td class="align-middle">${keyDates.length > 0 ? keyDates.join('<br>') : '<span class="text-muted" style="font-size:11px;">—</span>'}</td>
+                <td class="align-middle"><small class="text-muted">${escHtml(n.created_at)}</small></td>
+                <td class="align-middle text-right pr-4">
+                    <div class="d-flex justify-content-end" style="gap:6px;">
+                        <button class="btn btn-success btn-xs" onclick="approveRow(${n.id}, this)" title="Approve & Publish">
+                            <i class="fa fa-check mr-1"></i>Approve
+                        </button>
+                        <button class="btn btn-outline-danger btn-xs" onclick="rejectRow(${n.id}, this)" title="Discard notification" aria-label="Discard notification">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function renderPagination(data) {
+        const wrapper = document.getElementById('review-pagination-wrapper');
+        const ul = document.getElementById('review-pagination');
+        const info = document.getElementById('review-page-info');
+
+        if (data.pages <= 1) {
+            wrapper.style.display = 'none';
+            return;
+        }
+        wrapper.style.removeProperty('display');
+
+        const start = (data.page - 1) * 10 + 1;
+        const end = Math.min(data.page * 10, data.total);
+        info.textContent = `Showing ${start}–${end} of ${data.total}`;
+
+        let pages = '';
+        if (data.has_prev) {
+            pages += `<li class="page-item"><a class="page-link" href="#" onclick="loadPendingPage(${data.page - 1}); return false;">‹</a></li>`;
+        }
+        // Compute page range around current
+        const delta = 2;
+        const range = [];
+        for (let i = Math.max(1, data.page - delta); i <= Math.min(data.pages, data.page + delta); i++) range.push(i);
+        if (range[0] > 1) { pages += `<li class="page-item"><a class="page-link" href="#" onclick="loadPendingPage(1); return false;">1</a></li>`; if (range[0] > 2) pages += `<li class="page-item disabled"><span class="page-link">…</span></li>`; }
+        range.forEach(p => {
+            pages += `<li class="page-item ${p === data.page ? 'active' : ''}"><a class="page-link" href="#" onclick="loadPendingPage(${p}); return false;">${p}</a></li>`;
+        });
+        if (range[range.length-1] < data.pages) { if (range[range.length-1] < data.pages - 1) pages += `<li class="page-item disabled"><span class="page-link">…</span></li>`; pages += `<li class="page-item"><a class="page-link" href="#" onclick="loadPendingPage(${data.pages}); return false;">${data.pages}</a></li>`; }
+        if (data.has_next) {
+            pages += `<li class="page-item"><a class="page-link" href="#" onclick="loadPendingPage(${data.page + 1}); return false;">›</a></li>`;
+        }
+        ul.innerHTML = pages;
+    }
+
+    function loadPendingPage(page) {
+        currentPage = page;
+        const q = document.getElementById('review-search-input').value.trim();
+        const tbody = document.getElementById('review-table-body');
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary mr-2" role="status"></div>Loading...</td></tr>`;
+
+        fetch(`/admin/api/pending-notifications?page=${page}&per_page=10&q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                renderRows(data.items);
+                renderPagination(data);
+                updateCounters(data.total);
+                // Reset checkboxes
+                document.getElementById('select-all-chk').checked = false;
+                updateBulkBar();
+            })
+            .catch(() => {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fa fa-triangle-exclamation mr-1"></i>Error loading notifications. <a href="#" onclick="loadPendingPage(${page})">Retry</a></td></tr>`;
+            });
+    }
+
+    function debounceSearch() {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => loadPendingPage(1), 350);
+    }
+
+    function approveRow(id, btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+        fetch(`/admin/api/approve/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.4s, background 0.4s';
+                        row.style.background = '#d4edda';
+                        row.style.opacity = '0';
+                        setTimeout(() => { row.remove(); loadPendingPage(currentPage); }, 450);
+                    }
+                    // Sync sidebar
+                    const sidebarItem = document.getElementById(`sidebar-notif-${id}`);
+                    if (sidebarItem) sidebarItem.remove();
+                    addTerminalLine(`[APPROVED] Notification #${id} published. ${data.alerts_sent} alerts dispatched.`, 'success');
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-check mr-1"></i>Approve';
+                    alert(data.message);
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-check mr-1"></i>Approve';
+            });
+    }
+
+    function rejectRow(id, btn) {
+        if (!confirm('Discard this notification? This action cannot be undone.')) return;
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+        fetch(`/admin/api/reject/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.4s, background 0.4s';
+                        row.style.background = '#f8d7da';
+                        row.style.opacity = '0';
+                        setTimeout(() => { row.remove(); loadPendingPage(currentPage); }, 450);
+                    }
+                    const sidebarItem = document.getElementById(`sidebar-notif-${id}`);
+                    if (sidebarItem) sidebarItem.remove();
+                    addTerminalLine(`[DISCARDED] Notification #${id} removed from queue.`, 'warning');
+                }
+            })
+            .catch(() => { btn.disabled = false; btn.innerHTML = '<i class="fa fa-trash"></i>'; });
+    }
+
+    function quickApprove(id, btn) {
+        // Quick-approve from the sidebar widget
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+        fetch(`/admin/api/approve/${id}`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const sidebarItem = document.getElementById(`sidebar-notif-${id}`);
+                    if (sidebarItem) { sidebarItem.style.opacity = '0'; setTimeout(() => sidebarItem.remove(), 350); }
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) { row.style.opacity = '0'; setTimeout(() => { row.remove(); loadPendingPage(currentPage); }, 400); }
+                    addTerminalLine(`[APPROVED] Notification #${id} published.`, 'success');
+                }
+            });
+    }
+
+    function approveAllAjax() {
+        if (!confirm(`Approve ALL pending notifications? They will be published to the public feed and alerts sent to subscribers.`)) return;
+        const btn = document.getElementById('approve-all-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner-border spinner-border-sm mr-1" role="status"></div>Approving...';
+
+        fetch('/admin/api/approve-all', { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    addTerminalLine(`[APPROVED ALL] ${data.approved} notifications published. ${data.alerts_sent} alerts dispatched.`, 'success');
+                    loadPendingPage(1);
+                    // Clear sidebar
+                    document.querySelector('.moderation-list').innerHTML = '';
+                    document.querySelector('.empty-queue-state').style.display = '';
+                    document.querySelector('.moderation-list').style.display = 'none';
+                } else {
+                    alert(data.message);
+                }
+                btn.innerHTML = '<i class="fa fa-check-double mr-1"></i> Approve All';
+            })
+            .catch(() => { btn.disabled = false; btn.innerHTML = '<i class="fa fa-check-double mr-1"></i> Approve All'; });
+    }
+
+    function toggleSelectAll(chk) {
+        document.querySelectorAll('.row-checkbox').forEach(c => c.checked = chk.checked);
+        updateBulkBar();
+    }
+
+    function updateBulkBar() {
+        const checked = document.querySelectorAll('.row-checkbox:checked');
+        const bar = document.getElementById('bulk-actions-bar');
+        document.getElementById('selected-count').textContent = checked.length;
+        document.getElementById('select-all-chk').indeterminate = checked.length > 0 && checked.length < document.querySelectorAll('.row-checkbox').length;
+        if (checked.length > 0) { bar.style.removeProperty('display'); }
+        else { bar.style.display = 'none'; }
+    }
+
+    function bulkApproveSelected() {
+        const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(c => parseInt(c.value));
+        if (!ids.length) return;
+        if (!confirm(`Approve ${ids.length} selected notifications?`)) return;
+        let done = 0;
+        ids.forEach(id => {
+            fetch(`/admin/api/approve/${id}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) { row.style.opacity = '0'; setTimeout(() => row.remove(), 350); }
+                    done++;
+                    if (done === ids.length) setTimeout(() => loadPendingPage(currentPage), 500);
+                });
+        });
+    }
+
+    function bulkRejectSelected() {
+        const ids = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(c => parseInt(c.value));
+        if (!ids.length) return;
+        if (!confirm(`Discard ${ids.length} selected notifications? This cannot be undone.`)) return;
+        let done = 0;
+        ids.forEach(id => {
+            fetch(`/admin/api/reject/${id}`, { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) { row.style.background = '#f8d7da'; row.style.opacity = '0'; setTimeout(() => row.remove(), 350); }
+                    done++;
+                    if (done === ids.length) setTimeout(() => loadPendingPage(currentPage), 500);
+                });
+        });
+    }
+
+    // Category filter tabs
+    let activeCategoryFilter = '';
+    function filterCategory(cat, btn) {
+        activeCategoryFilter = cat;
+        document.querySelectorAll('.cat-filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadPendingPage(1);
+    }
+
+    // Override loadPendingPage to include category filter
+    const _origLoad = loadPendingPage;
+    function loadPendingPage(page) {
+        currentPage = page;
+        const q = document.getElementById('review-search-input').value.trim();
+        const tbody = document.getElementById('review-table-body');
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary mr-2" role="status"></div>Loading...</td></tr>`;
+        let url = `/admin/api/pending-notifications?page=${page}&per_page=10&q=${encodeURIComponent(q)}`;
+        if (activeCategoryFilter) url += `&category=${encodeURIComponent(activeCategoryFilter)}`;
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                renderRows(data.items);
+                renderPagination(data);
+                updateCounters(data.total);
+                document.getElementById('select-all-chk').checked = false;
+                updateBulkBar();
+            })
+            .catch(() => {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fa fa-triangle-exclamation mr-1"></i>Error loading notifications. <a href="#" onclick="loadPendingPage(${page})">Retry</a></td></tr>`;
+            });
+    }
+
+    // Load the review panel on page ready
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPendingPage(1);
+    });
+</script>
+{% endblock %}

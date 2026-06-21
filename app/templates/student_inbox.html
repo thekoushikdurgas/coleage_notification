@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Inbox Simulator | FormsADDA Alerts Console{% endblock %}
+
+{% block content %}
+<div class="form-head d-flex mb-3 align-items-start">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0">Alerts Simulator</h2>
+        <p class="mb-0">Inspect multi-channel dispatches (WhatsApp, Telegram, Email, SMS, Web Push) in visual mockups.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Inbox Log Sidebar -->
+    <div class="col-xl-4 col-lg-5 col-md-12">
+        <div class="card" style="height: 580px; display: flex; flex-direction: column;">
+            <div class="card-header border-0 pb-0">
+                <h3 class="card-title" style="font-size:1.1rem;">Recent Dispatches</h3>
+                <span class="badge badge-light badge-pill" aria-label="{{ messages|length }} dispatch logs">{{ messages|length }} logs</span>
+            </div>
+            
+            <div id="inbox-sidebar-body" class="card-body" style="flex-grow:1; overflow-y:auto; padding: 15px;">
+                {% if not messages %}
+                    <div class="text-center py-5 text-muted" role="status">
+                        <i class="fa-regular fa-bell-slash" style="font-size: 36px;" aria-hidden="true"></i>
+                        <p class="mt-2" style="font-size: 13px;">No alerts dispatched yet.</p>
+                        <p class="small-text text-muted" style="font-size: 11px;">Create a subscription, trigger a crawl on a matching organization, and approve it in the moderation queue to dispatch alerts.</p>
+                    </div>
+                {% else %}
+                    <div class="list-group list-group-flush" role="list">
+                        {% for msg in messages %}
+                            <div class="inbox-msg-item channel-{{ msg.channel }} p-3 border c-pointer"
+                                 id="msg-item-{{ msg.id }}"
+                                 style="border-color: rgba(0,0,0,0.05) !important;"
+                                 role="listitem"
+                                 tabindex="0"
+                                 aria-label="{{ msg.channel|upper }} alert: {{ msg.title }} — To: {{ msg.recipient }}"
+                                 onclick="selectInboxMessage({{ msg|tojson|forceescape }})"
+                                 onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectInboxMessage({{ msg|tojson|forceescape }});}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge badge-xs 
+                                        {% if msg.channel == 'whatsapp' %}badge-success
+                                        {% elif msg.channel == 'telegram' %}badge-info
+                                        {% elif msg.channel == 'email' %}badge-primary
+                                        {% elif msg.channel == 'push' %}badge-warning
+                                        {% else %}badge-secondary
+                                        {% endif %}">
+                                        {{ msg.channel|upper }}
+                                    </span>
+                                    <small class="text-muted" style="font-size:10px;">{{ msg.time.split(' | ')[0] }}</small>
+                                </div>
+                                <h6 class="text-black mb-1 text-truncate" style="font-size: 13px; font-weight:600;">{{ msg.title }}</h6>
+                                <small class="text-muted d-block" style="font-size: 10px; font-family: monospace;">To: {{ msg.recipient }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Preview Device Panel -->
+    <div class="col-xl-8 col-lg-7 col-md-12">
+        <div class="card" style="height: 580px; display: flex; flex-direction: column;">
+            <div class="card-header border-0 pb-0 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center" style="gap: 10px;">
+                <div>
+                    <h3 class="card-title" style="font-size:1.1rem;">Device Preview Mockup</h3>
+                    <p class="text-muted mb-0" style="font-size: 11px;">Interactive simulator showing exact visual rendering of messages.</p>
+                </div>
+            </div>
+            
+            <!-- Channel Tab Selector -->
+            <div class="px-4 pt-3">
+                <ul class="nav nav-tabs" id="mockup-tabs" role="tablist" aria-label="Preview channel selector" style="border-bottom: 2px solid #f1f3f9;">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-whatsapp" role="tab" type="button"
+                                onclick="switchMockupChannel('whatsapp')"
+                                aria-selected="false" aria-controls="mockup-viewport"
+                                style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
+                            <i class="fa-brands fa-whatsapp mr-1 text-success" aria-hidden="true"></i> WhatsApp
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-telegram" role="tab" type="button"
+                                onclick="switchMockupChannel('telegram')"
+                                aria-selected="false" aria-controls="mockup-viewport"
+                                style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
+                            <i class="fa-solid fa-paper-plane mr-1 text-info" aria-hidden="true"></i> Telegram
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-email" role="tab" type="button"
+                                onclick="switchMockupChannel('email')"
+                                aria-selected="false" aria-controls="mockup-viewport"
+                                style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
+                            <i class="fa fa-envelope mr-1 text-primary" aria-hidden="true"></i> Email
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-push" role="tab" type="button"
+                                onclick="switchMockupChannel('push')"
+                                aria-selected="false" aria-controls="mockup-viewport"
+                                style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
+                            <i class="fa fa-bell mr-1 text-warning" aria-hidden="true"></i> Push
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-sms" role="tab" type="button"
+                                onclick="switchMockupChannel('sms')"
+                                aria-selected="false" aria-controls="mockup-viewport"
+                                style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
+                            <i class="fa fa-commenting mr-1 text-secondary" aria-hidden="true"></i> SMS
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body d-flex justify-content-center align-items-center bg-transparent" id="device-container" style="flex-grow:1; overflow-y:auto; padding: 20px;">
+                <div id="mockup-viewport" class="w-100 d-flex justify-content-center align-items-center">
+                    <div class="text-center text-muted">
+                        <i class="fa fa-mobile-phone" style="font-size: 64px; opacity: 0.3;"></i>
+                        <p class="mt-2" style="font-size: 13px;">Select an alert from the list on the left to see the simulation</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let selectedMsg = null;
+    let activeChannel = 'whatsapp';
+    let typingTimeout = null;
+
+    function selectInboxMessage(msg) {
+        // Deselect previous
+        const activeItems = document.querySelectorAll('.inbox-msg-item');
+        activeItems.forEach(item => item.classList.remove('active'));
+        
+        // Mark active
+        const selectedItem = document.getElementById('msg-item-' + msg.id);
+        if (selectedItem) selectedItem.classList.add('active');
+        
+        selectedMsg = msg;
+        activeChannel = msg.channel;
+        
+        // Highlight correct tab
+        updateTabHighlights();
+        
+        // Render with fade transition
+        renderMockupWithFade();
+    }
+
+    function switchMockupChannel(channel) {
+        if (!selectedMsg) return;
+        activeChannel = channel;
+        updateTabHighlights();
+        renderMockupWithFade();
+    }
+
+    function updateTabHighlights() {
+        const tabs = document.querySelectorAll('#mockup-tabs [role="tab"]');
+        tabs.forEach(tab => {
+            const isActive = tab.id === 'tab-' + activeChannel;
+            tab.classList.toggle('active', isActive);
+            tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+    }
+
+    function renderMockupWithFade() {
+        const viewport = document.getElementById('mockup-viewport');
+        viewport.classList.add('fading');
+        
+        // Clear any pending typing timeouts
+        if (typingTimeout) {
+            clearTimeout(typingTimeout);
+            typingTimeout = null;
+        }
+
+        setTimeout(() => {
+            renderMockupContent();
+            viewport.classList.remove('fading');
+        }, 200);
+    }
+
+    function renderMockupContent() {
+        if (!selectedMsg) return;
+        const viewport = document.getElementById('mockup-viewport');
+        let html = '';
+        
+        if (activeChannel === 'whatsapp') {
+            html = `
+                <div class="whatsapp-mockup">
+                    <div class="wa-header">
+                        <div class="wa-avatar"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div class="wa-header-info">
+                            <span class="wa-title">${selectedMsg.org_name || 'FormsADDA Alerts'}</span>
+                            <span class="wa-status">Official Business Account</span>
+                        </div>
+                    </div>
+                    <div class="wa-chat-body">
+                        <div class="wa-bubble" id="wa-typing-indicator" style="display: block; margin-bottom: 8px; width: 60px; border-radius: 12px; padding: 8px 12px;">
+                            <div class="wa-typing">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="wa-bubble" id="wa-real-msg" style="display: none;">
+                            <div class="wa-bubble-content">${selectedMsg.text.replace(/\n/g, '<br>')}</div>
+                            <span class="wa-bubble-time">${selectedMsg.time.split(' | ')[0]}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            viewport.innerHTML = html;
+            
+            // Trigger typing simulation
+            typingTimeout = setTimeout(() => {
+                const typing = document.getElementById('wa-typing-indicator');
+                const msg = document.getElementById('wa-real-msg');
+                if (typing && msg) {
+                    typing.style.display = 'none';
+                    msg.style.display = 'block';
+                }
+            }, 1000);
+            
+        } else if (activeChannel === 'telegram') {
+            html = `
+                <div class="telegram-mockup">
+                    <div class="tg-header">
+                        <div class="tg-avatar"><i class="fa-solid fa-paper-plane"></i></div>
+                        <div class="tg-header-info">
+                            <span class="tg-title">${selectedMsg.org_name || 'FormsADDA Updates'}</span>
+                            <span class="tg-subscribers">84.2K subscribers</span>
+                        </div>
+                    </div>
+                    <div class="tg-chat-body">
+                        <div class="tg-post">
+                            <div class="tg-post-author">FormsADDA Admin</div>
+                            <div class="tg-post-content">${selectedMsg.text.replace(/\n/g, '<br>')}</div>
+                            <div class="tg-post-footer">
+                                <span class="views"><i class="fa-regular fa-eye"></i> 1.2K</span>
+                                <span class="tg-time">${selectedMsg.time.split(' | ')[0]}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            viewport.innerHTML = html;
+        } else if (activeChannel === 'email') {
+            html = `
+                <div class="email-mockup" style="max-height: 400px; overflow-y: auto;">
+                    <div class="em-header">
+                        <div class="em-meta-row"><strong>From:</strong> alerts@formsadda.com</div>
+                        <div class="em-meta-row"><strong>To:</strong> ${selectedMsg.recipient}</div>
+                        <div class="em-meta-row"><strong>Subject:</strong> ${selectedMsg.title}</div>
+                    </div>
+                    <div class="em-body" style="padding: 16px;">
+                        <div class="em-logo" style="font-size: 20px; font-weight:800; text-align:center; margin-bottom:12px; font-family:'Outfit', sans-serif;"><span style="color:#8a4fff;">Forms</span>ADDA</div>
+                        <div class="em-content">
+                            <h5 class="text-black font-weight-bold mb-2" style="font-family:'Outfit', sans-serif; font-size:14px;">${selectedMsg.title}</h5>
+                            <p style="font-size:12px; line-height:1.6; color:#4a5568; margin-bottom: 14px;">${selectedMsg.text.replace(/\n/g, '<br>')}</p>
+                            <div style="border-top: 1px solid #edf2f7; padding-top: 12px; margin-top: 20px;">
+                                <p style="font-size:11px; color:#a0aec0; margin-bottom: 10px;">This is a real-time notification aggregated from official portals. Do not reply to this email.</p>
+                                <a href="#" class="btn btn-primary btn-xs" style="border-radius:6px; font-weight:600;"><i class="fa fa-external-link mr-1"></i> Read Full Post</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            viewport.innerHTML = html;
+        } else if (activeChannel === 'push') {
+            html = `
+                <div class="push-mockup">
+                    <div class="phone-frame">
+                        <div class="phone-screen" style="height: 380px;">
+                            <div class="lockscreen-time">10:42 AM</div>
+                            <div class="lockscreen-date">Monday, June 22</div>
+                            
+                            <div class="push-banner">
+                                <div class="push-banner-header">
+                                    <span class="push-app-logo">FA</span>
+                                    <span class="push-app-name">FormsADDA</span>
+                                    <span class="push-time-ago">just now</span>
+                                </div>
+                                <div class="push-banner-body">
+                                    <strong>${selectedMsg.title}</strong>
+                                    <p style="font-size: 10.5px; line-height: 1.3; margin-top: 2px;">${selectedMsg.text.substring(0, 100)}${selectedMsg.text.length > 100 ? '...' : ''}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="slide-to-unlock" style="bottom:12px;"><i class="fa fa-chevron-right"></i> Slide to read</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            viewport.innerHTML = html;
+        } else {
+            // SMS
+            html = `
+                <div class="sms-mockup">
+                    <div class="sms-header">
+                        <span class="sms-avatar"><i class="fa fa-user-circle"></i></span>
+                        <span class="sms-sender">JD-FRMSAD</span>
+                    </div>
+                    <div class="sms-body">
+                        <div class="sms-bubble">
+                            <p style="margin: 0; line-height: 1.4;">${selectedMsg.text}</p>
+                            <span class="sms-time">${selectedMsg.time.split(' | ')[0]}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            viewport.innerHTML = html;
+        }
+    }
+    
+    // Real-time EventSource listener for delivery logs
+    const sse = new EventSource('/stream-events');
+    sse.addEventListener('delivery_log', function(e) {
+        const msg = JSON.parse(e.data);
+        // Use the stable ID selector to avoid matching the wrong card panel
+        const cardBody = document.getElementById('inbox-sidebar-body');
+        if (!cardBody) return;
+        
+        // Remove empty state if it exists
+        const emptyState = cardBody.querySelector('.text-center.py-5.text-muted');
+        if (emptyState) {
+            emptyState.remove();
+            
+            // Create list container
+            const listGroup = document.createElement('div');
+            listGroup.className = 'list-group list-group-flush';
+            listGroup.setAttribute('role', 'list');
+            cardBody.appendChild(listGroup);
+        }
+        
+        const listGroup = cardBody.querySelector('.list-group');
+        if (!listGroup) return;
+        
+        // Create new element
+        const item = document.createElement('div');
+        item.className = `inbox-msg-item channel-${msg.channel} p-3 border c-pointer fade-in`;
+        item.id = `msg-item-${msg.id || Date.now()}`;
+        item.style.borderColor = 'rgba(0,0,0,0.05) !important';
+        item.setAttribute('role', 'listitem');
+        item.setAttribute('tabindex', '0');
+        item.setAttribute('aria-label', `${msg.channel.toUpperCase()} alert: ${msg.title} — To: ${msg.recipient}`);
+        
+        // Setup click & keydown handlers
+        item.onclick = function() { selectInboxMessage(msg); };
+        item.onkeydown = function(evt) {
+            if (evt.key === 'Enter' || evt.key === ' ') {
+                evt.preventDefault();
+                selectInboxMessage(msg);
+            }
+        };
+        
+        let badgeClass = 'badge-secondary';
+        if (msg.channel === 'whatsapp') badgeClass = 'badge-success';
+        else if (msg.channel === 'telegram') badgeClass = 'badge-info';
+        else if (msg.channel === 'email') badgeClass = 'badge-primary';
+        else if (msg.channel === 'push') badgeClass = 'badge-warning';
+        
+        item.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge badge-xs ${badgeClass}">${msg.channel.toUpperCase()}</span>
+                <small class="text-muted" style="font-size:10px;">${msg.time.split(' | ')[0]}</small>
+            </div>
+            <h6 class="text-black mb-1 text-truncate" style="font-size: 13px; font-weight:600;">${msg.title}</h6>
+            <small class="text-muted d-block" style="font-size: 10px; font-family: monospace;">To: ${msg.recipient}</small>
+        `;
+        
+        listGroup.insertBefore(item, listGroup.firstChild);
+        
+        // Update badge count
+        const badge = document.querySelector('.badge-pill');
+        if (badge) {
+            let count = parseInt(badge.textContent) || 0;
+            count += 1;
+            badge.textContent = `${count} logs`;
+            badge.setAttribute('aria-label', `${count} dispatch logs`);
+        }
+        
+        // Automatically select the new message
+        item.click();
+    });
+    
+    // Auto-select first item if exists
+    window.addEventListener('DOMContentLoaded', () => {
+        const firstItem = document.querySelector('.inbox-msg-item');
+        if (firstItem) {
+            firstItem.click();
+        }
+    });
+</script>
+{% endblock %}

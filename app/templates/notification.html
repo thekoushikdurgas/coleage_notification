@@ -1,0 +1,438 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ content.meta_title }}{% endblock %}
+
+{% block head %}
+<meta name="description" content="{{ content.meta_description }}">
+<style>
+     /* Premium Markdown Article Styles */
+     .article-body {
+         font-family: 'Inter', sans-serif;
+         color: #374151;
+         line-height: 1.85;
+         font-size: 15.5px;
+     }
+     .article-body h2 {
+         font-family: 'Outfit', sans-serif;
+         font-size: 22px;
+         font-weight: 800;
+         color: #111827;
+         margin-top: 36px;
+         margin-bottom: 16px;
+         padding-bottom: 8px;
+         border-bottom: 2px solid #f3f4f6;
+         display: block;
+     }
+     .article-body h3 {
+         font-family: 'Outfit', sans-serif;
+         font-size: 18.5px;
+         font-weight: 700;
+         color: #1f2937;
+         margin-top: 28px;
+         margin-bottom: 12px;
+     }
+     .article-body h4 {
+         font-family: 'Outfit', sans-serif;
+         font-size: 16.5px;
+         font-weight: 700;
+         color: #374151;
+         margin-top: 24px;
+         margin-bottom: 10px;
+     }
+     .article-body p {
+         margin-bottom: 20px;
+     }
+     .article-body ul {
+         list-style: none; /* remove default */
+         padding-left: 0;
+         margin-bottom: 22px;
+     }
+     .article-body ul li {
+         position: relative;
+         padding-left: 22px;
+         margin-bottom: 10px;
+         line-height: 1.65;
+     }
+     .article-body ul li::before {
+         content: "•";
+         color: var(--fa-primary);
+         font-weight: bold;
+         font-size: 20px;
+         position: absolute;
+         left: 0;
+         top: -3px;
+     }
+     .article-body ol {
+         padding-left: 22px;
+         margin-bottom: 22px;
+     }
+     .article-body ol li {
+         margin-bottom: 10px;
+         line-height: 1.65;
+         padding-left: 4px;
+     }
+     .article-body strong {
+         color: #111827;
+         font-weight: 700;
+     }
+     .article-body a {
+         color: var(--fa-primary);
+         text-decoration: none;
+         font-weight: 600;
+         border-bottom: 1px dashed var(--fa-primary);
+         transition: all 0.2s ease;
+     }
+     .article-body a:hover {
+         color: var(--fa-accent);
+         border-bottom-style: solid;
+     }
+     .article-body code {
+         background: #f3f4f6;
+         color: #ef4444;
+         padding: 3px 6px;
+         border-radius: 6px;
+         font-size: 85%;
+         font-family: 'JetBrains Mono', monospace;
+     }
+     
+     /* Share strip enhancements */
+     .share-strip {
+         display: flex;
+         align-items: center;
+         flex-wrap: wrap;
+         gap: 12px;
+         margin-top: 32px;
+         padding-top: 24px;
+         border-top: 1px solid #f3f4f6;
+     }
+     .share-btn {
+         display: inline-flex;
+         align-items: center;
+         gap: 8px;
+         padding: 10px 20px;
+         border-radius: 10px;
+         font-size: 13px;
+         font-weight: 600;
+         color: #fff !important;
+         text-decoration: none !important;
+         transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+         border: none;
+         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+     }
+     .share-btn:hover {
+         transform: translateY(-2px);
+         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+     }
+     .share-btn-wa { background: linear-gradient(135deg, #25d366, #20ba5a); }
+     .share-btn-tg { background: linear-gradient(135deg, #0088cc, #0077b3); }
+     .share-btn-copy { background: linear-gradient(135deg, #4b5563, #374151); }
+     
+     /* Custom styling overrides for timeline and widgets */
+     .timeline-card-premium {
+         border: 1px solid rgba(0, 0, 0, 0.03) !important;
+         background: #fff;
+     }
+     .fa-timeline-premium {
+         position: relative;
+         padding-left: 20px;
+     }
+     .fa-timeline-premium::before {
+         content: '';
+         position: absolute;
+         left: 4px;
+         top: 8px;
+         bottom: 8px;
+         width: 2px;
+         background: #e5e7eb;
+     }
+     .fa-timeline-item-premium {
+         position: relative;
+         margin-bottom: 24px;
+     }
+     .fa-timeline-item-premium:last-child {
+         margin-bottom: 0;
+     }
+     .fa-timeline-item-premium::before {
+         content: '';
+         position: absolute;
+         left: -20px;
+         top: 6px;
+         width: 10px;
+         height: 10px;
+         border-radius: 50%;
+         background: #d1d5db;
+         border: 2px solid #fff;
+         box-shadow: 0 0 0 2px #e5e7eb;
+         z-index: 2;
+     }
+     .fa-timeline-item-premium.date-success::before {
+         background: #10b981;
+         box-shadow: 0 0 0 2px #d1fae5;
+     }
+     .fa-timeline-item-premium.date-danger::before {
+         background: #ef4444;
+         box-shadow: 0 0 0 2px #fee2e2;
+     }
+     .fa-timeline-item-premium.date-warning::before {
+         background: #f59e0b;
+         box-shadow: 0 0 0 2px #fef3c7;
+     }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-0" style="font-size:12.5px;">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" style="color:var(--fa-primary);font-weight:600;text-decoration:none;"><i class="fa fa-home mr-1"></i>Feed</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">{{ notification.title[:60] }}...</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Column: Article Content -->
+    <div class="col-xl-8 col-xxl-8 col-lg-12">
+        <div class="card shadow-sm mb-4" style="border-radius:20px !important;">
+            <div class="card-body p-4 p-md-5">
+                <!-- Org & Category Header -->
+                <div class="d-flex align-items-center flex-wrap mb-4" style="gap:12px;">
+                    <span class="badge-{{ notification.category|lower }} shadow-sm">{{ notification.category|upper }}</span>
+                    <div class="d-flex align-items-center flex-wrap" style="gap:8px;">
+                        <div style="width:34px;height:34px;border-radius:10px;background:{% if organization.category == 'college' %}rgba(47,76,221,0.08){% elif organization.category == 'board' %}rgba(255,170,43,0.08){% else %}rgba(43,193,85,0.08){% endif %};display:flex;align-items:center;justify-content:center;">
+                            {% if organization.category == 'college' %}
+                                <i class="fa fa-graduation-cap" style="color:var(--fa-primary);font-size:14px;"></i>
+                            {% elif organization.category == 'board' %}
+                                <i class="fa fa-school" style="color:var(--fa-warning);font-size:14px;"></i>
+                            {% else %}
+                                <i class="fa fa-landmark" style="color:var(--fa-success);font-size:14px;"></i>
+                            {% endif %}
+                        </div>
+                        <span class="text-dark font-weight-bold" style="font-size:14px;">{{ organization.name }}</span>
+                        {% if organization.state %}
+                            <span class="badge badge-light text-muted px-2 py-1" style="font-size: 11px; border-radius: 6px;">
+                                <i class="fa fa-map-marker-alt text-danger mr-1" style="font-size:10px;"></i>{{ organization.state }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <h1 class="text-black mb-3" style="font-family:'Outfit',sans-serif;font-size:28px;line-height:1.35;font-weight:800;letter-spacing:-0.5px;">{{ notification.title }}</h1>
+
+                <!-- Meta row -->
+                <div class="d-flex align-items-center flex-wrap mb-4" style="gap:16px;">
+                    <span class="text-muted" style="font-size:12.5px;">
+                        <i class="fa-regular fa-calendar mr-1"></i> Published {{ notification.created_at.strftime("%d %B, %Y") }}
+                    </span>
+                    <span class="badge badge-success badge-sm light px-3 py-1" style="font-size:11px;border-radius:20px;">
+                        <span class="spinner-grow spinner-grow-sm text-success mr-1" role="status" style="width:6px;height:6px;vertical-align:middle;"></span>{{ notification.status }}
+                    </span>
+                </div>
+
+                <hr class="my-4" style="border-color:#f1f3f9;">
+
+                <!-- Article Body (rendered by marked.js) -->
+                <div id="article-content" class="article-body">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Loading content...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Source Verify Strip -->
+                <div class="mt-5 p-4 d-flex justify-content-between align-items-center flex-wrap" style="background:linear-gradient(90deg, #f8fafc, #f1f5f9);border-radius:14px;gap:16px;border: 1px solid #e2e8f0;">
+                    <div class="d-flex align-items-center" style="gap:12px;">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#d1fae5;display:flex;align-items:center;justify-content:center;">
+                            <i class="fa fa-shield-halved text-success" style="font-size:18px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;text-transform:uppercase;font-weight:700;color:#64748b;letter-spacing:0.5px;">Official Source Verification</div>
+                            <div class="text-dark font-weight-bold" style="font-size:14px;">Verify directly on the portal of {{ organization.name }}</div>
+                        </div>
+                    </div>
+                    <a href="{{ notification.source_url }}" target="_blank" class="btn btn-primary px-4 py-2" style="border-radius:10px;font-weight:600;box-shadow: 0 4px 12px rgba(47,76,221,0.15);transition:all 0.2s;">
+                        <i class="fa fa-external-link-alt mr-1"></i> Visit Portal
+                    </a>
+                </div>
+
+                <!-- Share Strip -->
+                <div class="share-strip">
+                    <span class="text-muted" style="font-size:13px;font-weight:600;align-self:center;">Share Update:</span>
+                    <a href="https://api.whatsapp.com/send?text={{ notification.title | urlencode }}%20{{ request.url | urlencode }}" target="_blank" class="share-btn share-btn-wa">
+                        <i class="fa-brands fa-whatsapp" style="font-size:15px;"></i> WhatsApp
+                    </a>
+                    <a href="https://t.me/share/url?url={{ request.url | urlencode }}&text={{ notification.title | urlencode }}" target="_blank" class="share-btn share-btn-tg">
+                        <i class="fa-brands fa-telegram" style="font-size:15px;"></i> Telegram
+                    </a>
+                    <button class="share-btn share-btn-copy" onclick="copyLink()" id="copy-link-btn">
+                        <i class="fa fa-link"></i> Copy Link
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Timeline & Related -->
+    <div class="col-xl-4 col-xxl-4 col-lg-12">
+
+        <!-- Key Dates — Timeline Card -->
+        <div class="card timeline-card-premium mb-4" style="border-radius:16px !important;">
+            <div class="card-header border-0 pb-0 bg-transparent">
+                <h5 class="card-title text-black font-weight-bold mb-0" style="font-family:'Outfit',sans-serif;font-size:16px;"><i class="fa fa-calendar-days text-primary mr-2"></i>Key Dates</h5>
+            </div>
+            <div class="card-body pt-3">
+                <div class="fa-timeline-premium">
+                    <div class="fa-timeline-item-premium date-success">
+                        <div class="fa-timeline-label">Apply Starts</div>
+                        <div class="fa-timeline-value text-success" style="font-size:14px;font-weight:700;">{{ notification.application_start_date | format_date }}</div>
+                    </div>
+                    <div class="fa-timeline-item-premium date-danger">
+                        <div class="fa-timeline-label">Deadline</div>
+                        <div class="fa-timeline-value text-danger" style="font-size:14px;font-weight:700;">{{ notification.application_end_date | format_date }}</div>
+                    </div>
+                    <div class="fa-timeline-item-premium">
+                        <div class="fa-timeline-label">Exam Date</div>
+                        <div class="fa-timeline-value" style="font-size:14px;font-weight:700;">{{ notification.exam_date | format_date }}</div>
+                    </div>
+                    {% if notification.counselling_date %}
+                    <div class="fa-timeline-item-premium date-warning">
+                        <div class="fa-timeline-label">Counselling</div>
+                        <div class="fa-timeline-value text-warning" style="font-size:14px;font-weight:700;">{{ notification.counselling_date | format_date }}</div>
+                    </div>
+                    {% endif %}
+                    {% if notification.merit_list_date %}
+                    <div class="fa-timeline-item-premium">
+                        <div class="fa-timeline-label">Merit List</div>
+                        <div class="fa-timeline-value" style="font-size:14px;font-weight:700;">{{ notification.merit_list_date | format_date }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Specifications Card -->
+        <div class="card shadow-sm mb-4" style="border-radius:16px !important;">
+            <div class="card-header border-0 pb-0 bg-transparent">
+                <h5 class="card-title text-black font-weight-bold mb-0" style="font-family:'Outfit',sans-serif;font-size:16px;"><i class="fa fa-circle-info text-primary mr-2"></i>Specifications</h5>
+            </div>
+            <div class="card-body pt-3">
+                {% set specs = [
+                    ('fa fa-rupee-sign text-success', 'Fees', notification.fee_structure or 'Refer to official website'),
+                    ('fa fa-award text-warning', 'Scholarships', notification.scholarship_details or 'Merit & Need-Based'),
+                    ('fa fa-users text-primary', 'Total Seats', notification.seat_matrix or 'Check prospectus'),
+                    ('fa fa-file-contract text-info', 'Eligibility', notification.eligibility or 'Standard criteria')
+                ] %}
+                {% for icon, label, value in specs %}
+                <div class="d-flex align-items-start py-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f8fafc !important;">
+                    <div style="width:32px;height:32px;border-radius:10px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;margin-top:2px;">
+                        <i class="{{ icon }}" style="font-size:13px;"></i>
+                    </div>
+                    <div style="min-width:0;">
+                        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:#64748b;font-weight:700;margin-bottom:2px;">{{ label }}</div>
+                        <div style="font-size:13.5px;color:#1e293b;font-weight:600;word-break:break-word;line-height:1.4;">{{ value }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Subscribe CTA Card -->
+        <div class="card subscribe-banner-card mb-4 text-white text-center shadow-lg" style="border-radius:18px !important; border: none;">
+            <div class="card-body p-4 p-md-5" style="position:relative;z-index:1;">
+                <div class="subscribe-banner-bell mb-3" style="width:60px;height:60px;background:rgba(255,255,255,0.15);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:24px;color:#fff;">
+                    <i class="fa fa-bell"></i>
+                </div>
+                <h5 class="text-white font-weight-bold mb-2" style="font-family:'Outfit',sans-serif;font-size:18px;letter-spacing:-0.3px;">Track This Organization</h5>
+                <p class="text-white-50 mb-4" style="font-size:12.5px;line-height:1.5;max-width:240px;margin-left:auto;margin-right:auto;">Get instant alerts the moment <strong style="color:#fff;">{{ organization.name }}</strong> publishes future announcements.</p>
+                <a href="{{ url_for('main.subscribe', org_id=organization.id) }}" class="btn btn-light btn-sm text-primary font-weight-bold px-4 py-2 shadow-sm" style="border-radius:10px;font-size:13px;transition:all 0.25s;">
+                    <i class="fa fa-bell mr-1"></i> Subscribe Alerts
+                </a>
+            </div>
+        </div>
+
+        <!-- Related Updates -->
+        <div class="card shadow-sm mb-4" style="border-radius:16px !important;">
+            <div class="card-header border-0 pb-0 bg-transparent">
+                <h5 class="card-title text-black font-weight-bold mb-0" style="font-family:'Outfit',sans-serif;font-size:16px;"><i class="fa fa-link text-primary mr-2"></i>Related Updates</h5>
+            </div>
+            <div class="card-body pt-3">
+                <ul class="list-unstyled mb-0">
+                    {% for rel in related %}
+                        <li class="py-3 {% if not loop.last %}border-bottom{% endif %}" style="border-color:#f8fafc !important;">
+                            <a href="{{ url_for('main.notification_detail', seo_url=rel.generated_content.seo_url) }}" class="text-dark d-block font-weight-bold mb-1" style="font-size:13.5px;line-height:1.45;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='var(--fa-primary)'" onmouseout="this.style.color=''">{{ rel.title }}</a>
+                            <small class="text-muted d-flex align-items-center" style="font-size:11.5px;gap:4px;"><i class="fa fa-building"></i> {{ rel.organization.name }}</small>
+                        </li>
+                    {% else %}
+                        <li class="text-center text-muted py-4">
+                            <i class="fa fa-folder-open d-block mb-2" style="font-size:24px;opacity:0.2;"></i>
+                            No related posts yet.
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rawMarkdown = {{ content.article | tojson }};
+    
+    // Configure marked options
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+    
+    // Robust markdown cleaner that parses mixed HTML/Markdown & formats it cleanly
+    function cleanMarkdown(text) {
+        if (!text) return "";
+        
+        // Decode HTML entities if they were double-escaped
+        const txt = document.createElement("textarea");
+        txt.innerHTML = text;
+        let decoded = txt.value;
+        
+        // Replace common HTML tags with Markdown counterparts to prevent marked parsing issues
+        decoded = decoded
+            .replace(/<h4>/gi, "\n#### ")
+            .replace(/<\/h4>/gi, "\n")
+            .replace(/<h3>/gi, "\n### ")
+            .replace(/<\/h3>/gi, "\n")
+            .replace(/<h2>/gi, "\n## ")
+            .replace(/<\/h2>/gi, "\n")
+            .replace(/<h1>/gi, "\n# ")
+            .replace(/<\/h1>/gi, "\n")
+            .replace(/<br\s*\/?>/gi, "\n")
+            .replace(/&lt;br\s*\/?&gt;/gi, "\n")
+            .replace(/>>\s*/g, "> ") // fix double quote angle bracket lists
+            .replace(/\*\*\s*\*\*/g, ""); // clean up empty bold artifacts
+            
+        return decoded;
+    }
+    
+    // Clean and render markdown content
+    const cleanedContent = cleanMarkdown(rawMarkdown);
+    document.getElementById('article-content').innerHTML = marked.parse(cleanedContent);
+});
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        const btn = document.getElementById('copy-link-btn');
+        const origText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-check"></i> Copied!';
+        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        setTimeout(() => { btn.innerHTML = origText; btn.style.background = ''; }, 2500);
+    });
+}
+</script>
+{% endblock %}

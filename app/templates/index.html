@@ -1,0 +1,928 @@
+{% extends 'base.html' %}
+
+{% block title %}FormsADDA Feed | Real-Time Admissions &amp; Exam updates{% endblock %}
+
+{% block head %}
+<style>
+/* =====================================================
+   UPDATES FEED — PREMIUM REDESIGN
+   ===================================================== */
+
+/* Animated gradient header strip */
+.feed-hero {
+  background: linear-gradient(135deg, #2f4cdd 0%, #8a4fff 60%, #17a2b8 100%);
+  border-radius: 18px;
+  padding: 28px 32px;
+  color: #fff;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.feed-hero::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+.feed-hero::after {
+  content: '';
+  position: absolute; bottom: -50px; left: 30%;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+}
+.feed-hero-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px; font-weight: 800;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+.feed-hero-sub {
+  font-size: 13.5px;
+  opacity: 0.85;
+  margin: 0;
+  line-height: 1.5;
+}
+.feed-live-dot {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(43,193,85,0.2);
+  border: 1px solid rgba(43,193,85,0.5);
+  color: #2bc155;
+  border-radius: 20px; padding: 4px 12px;
+  font-size: 11.5px; font-weight: 700;
+}
+.feed-live-pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #2bc155;
+  animation: feed-pulse 1.5s infinite;
+}
+@keyframes feed-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* Hero stats — glass style */
+.feed-stat-card {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 14px; padding: 16px 20px;
+  backdrop-filter: blur(8px);
+  transition: all 0.25s ease;
+}
+.feed-stat-card:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateY(-2px);
+}
+.feed-stat-num {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px; font-weight: 800;
+  line-height: 1; color: #fff;
+}
+.feed-stat-lbl {
+  font-size: 11px; color: rgba(255,255,255,0.75);
+  font-weight: 500; margin-top: 3px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.feed-stat-icon {
+  font-size: 22px; opacity: 0.7; margin-bottom: 8px;
+}
+
+/* Filter panel — cleaner */
+.filter-panel {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+.filter-panel .form-control,
+.filter-panel .form-select {
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 13px;
+  padding: 9px 13px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.filter-panel .form-control:focus,
+.filter-panel .form-select:focus {
+  border-color: #2f4cdd;
+  box-shadow: 0 0 0 3px rgba(47,76,221,0.1);
+  outline: none;
+}
+.filter-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #6b7280;
+  margin-bottom: 6px;
+  display: block;
+}
+.btn-apply-filter {
+  background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+  color: #fff; border: none; border-radius: 10px;
+  padding: 9px 20px; font-weight: 700; font-size: 13px;
+  transition: all 0.2s ease;
+}
+.btn-apply-filter:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 16px rgba(47,76,221,0.3);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.btn-reset-filter {
+  background: #f3f4f6; border: 1.5px solid #e5e7eb;
+  border-radius: 10px; color: #6b7280;
+  padding: 9px 14px; font-weight: 600; font-size: 13px;
+  transition: all 0.2s ease;
+}
+.btn-reset-filter:hover {
+  background: #fee2e2; border-color: #f72b50; color: #f72b50;
+  transform: translateY(-1px);
+}
+
+/* Toast banner */
+@keyframes toast-slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.new-updates-toast {
+  animation: toast-slide-down 0.35s ease-out forwards;
+  background: linear-gradient(135deg, #2f4cdd 0%, #8a4fff 100%);
+  color: #fff; border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(47,76,221,0.35);
+  cursor: pointer; font-weight: 600; font-size: 13.5px;
+  transition: all 0.25s ease;
+}
+.new-updates-toast:hover {
+  box-shadow: 0 10px 32px rgba(47,76,221,0.45);
+  transform: translateY(-2px);
+}
+@keyframes float-down { 0%,100%{transform:translateY(0)} 50%{transform:translateY(4px)} }
+.animate-float { animation: float-down 1.2s infinite; display: inline-block; }
+
+/* Announcement card redesign */
+.notif-card-v2 {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  border: 1px solid #f1f3f9;
+  margin-bottom: 14px;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(.4,0,.2,1);
+  position: relative;
+}
+.notif-card-v2:hover {
+  box-shadow: 0 8px 28px rgba(47,76,221,0.1);
+  transform: translateY(-3px);
+  border-color: rgba(47,76,221,0.15);
+}
+.notif-card-v2::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; border-radius: 4px 0 0 4px;
+  background: var(--accent-color, #2f4cdd);
+}
+.notif-card-v2.cat-admission { --accent-color: #2f4cdd; }
+.notif-card-v2.cat-exam      { --accent-color: #ffaa2b; }
+.notif-card-v2.cat-result    { --accent-color: #2bc155; }
+.notif-card-v2.cat-scholarship { --accent-color: #17a2b8; }
+.notif-card-v2.cat-policy    { --accent-color: #6c757d; }
+.notif-card-v2.cat-other     { --accent-color: #ccc; }
+
+.notif-card-v2 .card-inner { padding: 16px 18px 16px 22px; }
+
+/* Org row */
+.notif-org-badge {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+}
+.notif-org-badge.college   { background: #eff3ff; color: #2f4cdd; }
+.notif-org-badge.board     { background: #fff8ec; color: #ffaa2b; }
+.notif-org-badge.regulator { background: #edfff4; color: #2bc155; }
+
+.notif-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px; font-weight: 700;
+  color: #1a202c; line-height: 1.4;
+  margin: 10px 0 8px;
+  text-decoration: none;
+}
+.notif-title a { color: inherit; text-decoration: none; }
+.notif-title a:hover { color: #2f4cdd; }
+
+.notif-body {
+  font-size: 13px; line-height: 1.65;
+  color: #6b7280; margin-bottom: 12px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* Date chips */
+.date-chip {
+  display: inline-flex; flex-direction: column;
+  background: #f8fafc; border-radius: 8px;
+  padding: 6px 12px; border-left: 3px solid transparent;
+}
+.date-chip.chip-start { border-left-color: #2bc155; background: #f0fff4; }
+.date-chip.chip-end   { border-left-color: #f72b50; background: #fff0f3; }
+.date-chip.chip-exam  { border-left-color: #2f4cdd; background: #eff3ff; }
+.date-chip-label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; color: #9ca3af; }
+.date-chip-value { font-size: 12.5px; font-weight: 800; margin-top: 1px; }
+.date-chip.chip-start .date-chip-value { color: #2bc155; }
+.date-chip.chip-end   .date-chip-value { color: #f72b50; }
+.date-chip.chip-exam  .date-chip-value { color: #2f4cdd; }
+
+/* Urgency badge */
+.urgency-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 700;
+  border-radius: 6px; padding: 3px 8px;
+}
+.urgency-critical { background: #fee2e2; color: #b91c1c; }
+.urgency-soon     { background: #fef3c7; color: #92400e; }
+.urgency-normal   { background: #f0fff4; color: #065f46; }
+
+/* Card footer */
+.notif-card-footer {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #f1f3f9;
+}
+.live-indicator {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11.5px; font-weight: 700; color: #2bc155;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #2bc155;
+  animation: feed-pulse 2s infinite;
+}
+.btn-read-more {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+  color: #fff; border: none; border-radius: 8px;
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+  text-decoration: none; transition: all 0.2s ease;
+}
+.btn-read-more:hover {
+  color: #fff; filter: brightness(1.1);
+  box-shadow: 0 4px 14px rgba(47,76,221,0.3);
+  transform: translateY(-1px);
+}
+
+/* Empty state */
+.empty-feed {
+  text-align: center; padding: 60px 32px;
+  background: #fff; border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.empty-feed-icon { font-size: 64px; opacity: 0.2; margin-bottom: 16px; }
+
+/* Pagination */
+.feed-pagination .page-item .page-link {
+  border-radius: 8px !important;
+  margin: 0 3px; border: 1.5px solid #e5e7eb;
+  color: #374151; font-weight: 600; font-size: 13px;
+  padding: 7px 13px; transition: all 0.2s ease;
+}
+.feed-pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+  border-color: transparent; color: #fff;
+  box-shadow: 0 3px 10px rgba(47,76,221,0.3);
+}
+.feed-pagination .page-item .page-link:hover:not(.active) {
+  background: #f0f4ff; border-color: #2f4cdd; color: #2f4cdd;
+}
+
+/* Sidebar components */
+.sidebar-card {
+  background: #fff; border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  border: 1px solid #f1f3f9;
+  margin-bottom: 16px; overflow: hidden;
+}
+.sidebar-card-header {
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid #f5f5f7;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px; font-weight: 700; color: #1a202c; margin: 0;
+}
+.sidebar-card-body { padding: 14px 18px; }
+
+/* Trend items */
+.trend-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f7;
+  transition: all 0.2s ease;
+}
+.trend-item:last-child { border-bottom: none; }
+.trend-item:hover .trend-org-name { color: #2f4cdd; }
+.trend-num {
+  width: 24px; height: 24px; border-radius: 7px;
+  background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+  color: #fff; font-size: 10.5px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.trend-num.top3 {
+  background: linear-gradient(135deg, #ffaa2b, #ff6f2b);
+}
+.trend-org-name {
+  font-size: 13px; font-weight: 600; color: #1a202c;
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-decoration: none; transition: color 0.2s ease;
+}
+.trend-count {
+  background: #f3f4f6; border-radius: 6px;
+  padding: 2px 8px; font-size: 11px; font-weight: 700; color: #6b7280;
+  flex-shrink: 0;
+}
+
+/* Subscribe banner - premium */
+.subscribe-card {
+  background: linear-gradient(145deg, #2f4cdd 0%, #8a4fff 100%);
+  border-radius: 16px; padding: 24px 20px;
+  position: relative; overflow: hidden; color: #fff;
+  margin-bottom: 16px;
+}
+.subscribe-card::before {
+  content: '';
+  position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.subscribe-card::after {
+  content: '';
+  position: absolute; bottom: -20px; left: 10px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.subscribe-card-emoji {
+  font-size: 36px; display: block; margin-bottom: 10px;
+  animation: bell-ring 3s infinite;
+}
+@keyframes bell-ring {
+  0%,90%,100% { transform: rotate(0); }
+  92% { transform: rotate(-10deg); }
+  94% { transform: rotate(10deg); }
+  96% { transform: rotate(-8deg); }
+  98% { transform: rotate(8deg); }
+}
+.subscribe-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 800; margin-bottom: 6px;
+}
+.subscribe-card-sub {
+  font-size: 12px; line-height: 1.5; opacity: 0.85; margin-bottom: 14px;
+}
+.btn-subscribe {
+  background: #fff;
+  color: #2f4cdd; border-radius: 10px;
+  padding: 9px 20px; font-weight: 800; font-size: 13px;
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; transition: all 0.2s ease;
+  border: none;
+}
+.btn-subscribe:hover {
+  color: #8a4fff; transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* Category chips */
+.cat-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  color: #374151; text-decoration: none;
+  transition: all 0.2s ease;
+}
+.cat-chip:hover, .cat-chip.active {
+  background: #eff3ff; border-color: #2f4cdd; color: #2f4cdd;
+}
+.cat-chip.active {
+  background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+  border-color: transparent; color: #fff;
+}
+
+/* Section header */
+.section-hdr {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.section-hdr-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px; font-weight: 700; color: #1a202c; margin: 0;
+}
+
+/* Skeleton shimmer loader */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: 6px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- =====================================================================
+     HERO HEADER STRIP
+     ===================================================================== -->
+<div class="feed-hero fade-in">
+  <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:16px; position:relative; z-index:1;">
+    <div>
+      <h1 class="feed-hero-title">📡 Updates Feed</h1>
+      <p class="feed-hero-sub">Real-time educational announcements aggregated from <strong>53,000+</strong> official Indian portals.</p>
+      <div class="mt-3 d-flex align-items-center" style="gap:10px; flex-wrap:wrap;">
+        <span class="feed-live-dot">
+          <span class="feed-live-pulse"></span> LIVE
+        </span>
+        <span style="font-size:12.5px; opacity:0.75;">Auto-updates without page refresh</span>
+      </div>
+    </div>
+    <!-- Hero inline stats -->
+    <div class="d-flex" style="gap:12px; flex-wrap:wrap;">
+      <div class="feed-stat-card text-center">
+        <div class="feed-stat-icon">📰</div>
+        <div class="feed-stat-num">{{ pagination.total }}</div>
+        <div class="feed-stat-lbl">Active Notices</div>
+      </div>
+      <div class="feed-stat-card text-center">
+        <div class="feed-stat-icon">🗺️</div>
+        <div class="feed-stat-num">{{ states|length }}</div>
+        <div class="feed-stat-lbl">States</div>
+      </div>
+      <div class="feed-stat-card text-center">
+        <div class="feed-stat-icon">🏷️</div>
+        <div class="feed-stat-num">{{ categories|length }}</div>
+        <div class="feed-stat-lbl">Categories</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================================
+     FILTERS PANEL
+     ===================================================================== -->
+<div class="filter-panel fade-in-up stagger-1">
+  <form action="{{ url_for('main.index') }}" method="GET" aria-label="Filter announcements">
+    <div class="row align-items-end" style="gap:0; row-gap:12px;">
+      <div class="col-xl-4 col-lg-4 col-md-6">
+        <label for="q" class="filter-label"><i class="fa fa-search mr-1" style="color:#2f4cdd;"></i>Keyword Search</label>
+        <input type="text" id="q" name="q" class="form-control"
+               value="{{ search_query or '' }}"
+               placeholder="College, exam, course, state..."
+               aria-label="Search by keyword">
+      </div>
+      <div class="col-xl-3 col-lg-3 col-md-6">
+        <label for="state-filter" class="filter-label"><i class="fa fa-map-marker-alt mr-1" style="color:#2f4cdd;"></i>State</label>
+        <select id="state-filter" name="state" class="form-control" onchange="this.form.submit()" aria-label="Filter by state">
+          <option value="">All States</option>
+          {% for state in states %}
+            <option value="{{ state }}" {% if selected_state == state %}selected{% endif %}>{{ state }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-xl-3 col-lg-3 col-md-6">
+        <label for="category-filter" class="filter-label"><i class="fa fa-tag mr-1" style="color:#2f4cdd;"></i>Category</label>
+        <select id="category-filter" name="category" class="form-control" onchange="this.form.submit()" aria-label="Filter by category">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_cat == cat %}selected{% endif %}>{{ cat|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-xl-2 col-lg-2 col-md-6 d-flex" style="gap:8px;">
+        <button type="submit" class="btn-apply-filter flex-grow-1" aria-label="Apply filters">
+          <i class="fa fa-filter mr-1"></i> Apply
+        </button>
+        <a href="{{ url_for('main.index') }}" class="btn-reset-filter" aria-label="Clear all filters" title="Clear filters">
+          <i class="fa fa-rotate-left"></i>
+        </a>
+      </div>
+    </div>
+    {% if search_query or selected_state or selected_cat %}
+    <div class="mt-3 d-flex align-items-center" style="gap:8px; flex-wrap:wrap;">
+      <span style="font-size:11.5px; color:#6b7280; font-weight:600;">Active filters:</span>
+      {% if search_query %}
+        <span style="background:#eff3ff;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;color:#2f4cdd;">
+          <i class="fa fa-search mr-1"></i>{{ search_query }}
+        </span>
+      {% endif %}
+      {% if selected_state %}
+        <span style="background:#eff3ff;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;color:#2f4cdd;">
+          <i class="fa fa-map-marker-alt mr-1"></i>{{ selected_state }}
+        </span>
+      {% endif %}
+      {% if selected_cat %}
+        <span style="background:#eff3ff;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:600;color:#2f4cdd;">
+          <i class="fa fa-tag mr-1"></i>{{ selected_cat|capitalize }}
+        </span>
+      {% endif %}
+    </div>
+    {% endif %}
+  </form>
+</div>
+
+<!-- =====================================================================
+     MAIN CONTENT ROW
+     ===================================================================== -->
+<div class="row">
+  <!-- ===== LEFT COLUMN: ANNOUNCEMENTS ===== -->
+  <div class="col-xl-8 col-lg-12" role="region" aria-label="Announcements List">
+
+    <!-- Section header -->
+    <div class="section-hdr">
+      <h2 class="section-hdr-title">Latest Announcements</h2>
+      <div class="d-flex align-items-center" style="gap:8px;">
+        {% if search_query or selected_state or selected_cat %}
+          <span style="background:#f3f4f6;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:#6b7280;" role="status" aria-live="polite">
+            Filtered results
+          </span>
+        {% endif %}
+        <span style="background:#f0fff4;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;color:#2bc155;">
+          {{ pagination.total }} total
+        </span>
+      </div>
+    </div>
+
+    <!-- ====== NEW UPDATES TOAST ====== -->
+    <div id="new-updates-banner" class="new-updates-toast mb-3" style="display:none;" role="alert" aria-live="assertive">
+      <div class="d-flex align-items-center justify-content-between py-2 px-4">
+        <div class="d-flex align-items-center" style="gap:10px;">
+          <span class="animate-float" style="font-size:18px;">⬇️</span>
+          <div>
+            <div style="font-weight:800; font-size:14px;"><span id="new-updates-count">0</span> New Announcements Published</div>
+            <div style="font-size:11.5px; opacity:0.8;">Click to reveal and pin to the top</div>
+          </div>
+        </div>
+        <span style="font-size:18px; opacity:0.5;">→</span>
+      </div>
+    </div>
+
+    <!-- ====== ANNOUNCEMENT CARDS ====== -->
+    {% if not notifications %}
+      <div class="empty-feed">
+        <div class="empty-feed-icon">📭</div>
+        <h4 style="font-family:'Outfit',sans-serif; color:#1a202c; margin-bottom:10px;">No Active Announcements Found</h4>
+        <p class="text-muted" style="max-width:420px;margin:0 auto 20px;font-size:13.5px;line-height:1.6;">
+          No notices matching your filters have been approved and published. Go to the Admin Portal to run scrapers and approve pending notices.
+        </p>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn-read-more" style="display:inline-flex;">
+          <i class="fa fa-cog"></i> Go to Admin Dashboard
+        </a>
+      </div>
+    {% else %}
+      <div id="announcements-container">
+        {% for notif in notifications %}
+        <div class="notif-card-v2 cat-{{ notif.category|lower }} fade-in-up"
+             style="animation-delay:{{ loop.index0 * 0.04 }}s;"
+             data-notif-id="{{ notif.id }}">
+          <div class="card-inner">
+
+            <!-- Org row -->
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center" style="gap:10px; min-width:0; flex:1;">
+                <div class="notif-org-badge {{ notif.organization.category }}">
+                  {% if notif.organization.category == 'college' %}
+                    <i class="fa fa-graduation-cap"></i>
+                  {% elif notif.organization.category == 'board' %}
+                    <i class="fa fa-school"></i>
+                  {% else %}
+                    <i class="fa fa-landmark"></i>
+                  {% endif %}
+                </div>
+                <div style="min-width:0;">
+                  <div class="font-weight-bold text-truncate" style="font-size:13px;color:#1a202c;max-width:300px;" title="{{ notif.organization.name }}">
+                    {{ notif.organization.name }}
+                  </div>
+                  {% if notif.organization.state %}
+                    <div style="font-size:11px;color:#9ca3af;">
+                      <i class="fa fa-map-marker-alt mr-1" style="font-size:9px;"></i>{{ notif.organization.state }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="d-flex align-items-center" style="gap:6px; flex-shrink:0;">
+                {# Urgency badge based on deadline #}
+                {% if notif.application_end_date %}
+                  <span class="urgency-badge urgency-soon">
+                    <i class="fa fa-clock" style="font-size:9px;"></i> Deadline Soon
+                  </span>
+                {% endif %}
+                <span class="badge-{{ notif.category|lower }}">{{ notif.category }}</span>
+              </div>
+            </div>
+
+            <!-- Title -->
+            <div class="notif-title mt-2 mb-1">
+              {% if notif.generated_content %}
+                <a href="{{ url_for('main.notification_detail', seo_url=notif.generated_content.seo_url) }}">
+                  {{ notif.title }}
+                </a>
+              {% else %}
+                {{ notif.title }}
+              {% endif %}
+            </div>
+
+            <!-- Body preview -->
+            <p class="notif-body">{{ notif.body[:220] }}{% if notif.body|length > 220 %}...{% endif %}</p>
+
+            <!-- Key Dates -->
+            {% if notif.application_start_date or notif.application_end_date or notif.exam_date %}
+            <div class="d-flex flex-wrap mb-3" style="gap:8px;">
+              {% if notif.application_start_date %}
+                <div class="date-chip chip-start">
+                  <span class="date-chip-label">Apply Starts</span>
+                  <span class="date-chip-value">{{ notif.application_start_date }}</span>
+                </div>
+              {% endif %}
+              {% if notif.application_end_date %}
+                <div class="date-chip chip-end">
+                  <span class="date-chip-label">Deadline</span>
+                  <span class="date-chip-value">{{ notif.application_end_date }}</span>
+                </div>
+              {% endif %}
+              {% if notif.exam_date %}
+                <div class="date-chip chip-exam">
+                  <span class="date-chip-label">Exam Date</span>
+                  <span class="date-chip-value">{{ notif.exam_date }}</span>
+                </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Footer -->
+            <div class="notif-card-footer">
+              <span class="live-indicator">
+                <span class="live-dot"></span> Live
+              </span>
+              {% if notif.generated_content %}
+                <a href="{{ url_for('main.notification_detail', seo_url=notif.generated_content.seo_url) }}"
+                   class="btn-read-more" aria-label="Read full details for {{ notif.title }}">
+                  Read Details <i class="fa fa-arrow-right"></i>
+                </a>
+              {% else %}
+                <span style="background:#f3f4f6;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:#9ca3af;">
+                  <i class="fa fa-circle-notch fa-spin mr-1"></i> Generating…
+                </span>
+              {% endif %}
+            </div>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if pagination and pagination.pages > 1 %}
+    <nav class="mt-4" aria-label="Announcements pagination">
+      <ul class="pagination justify-content-center flex-wrap feed-pagination">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('main.index', page=pagination.prev_num, state=selected_state, category=selected_cat, q=search_query) }}"
+             aria-label="Previous page" {% if not pagination.has_prev %}tabindex="-1"{% endif %}>
+            <i class="fa fa-chevron-left"></i>
+          </a>
+        </li>
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p %}
+            <li class="page-item {% if p == pagination.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('main.index', page=p, state=selected_state, category=selected_cat, q=search_query) }}"
+                 {% if p == pagination.page %}aria-current="page"{% endif %} aria-label="Page {{ p }}">{{ p }}</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('main.index', page=pagination.next_num, state=selected_state, category=selected_cat, q=search_query) }}"
+             aria-label="Next page" {% if not pagination.has_next %}tabindex="-1"{% endif %}>
+            <i class="fa fa-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+      <p class="text-center text-muted" style="font-size:12px;" aria-live="polite">
+        Showing {{ pagination.first }}–{{ pagination.last }} of {{ pagination.total }} announcements
+      </p>
+    </nav>
+    {% endif %}
+  </div>
+
+  <!-- ===== RIGHT COLUMN: SIDEBAR ===== -->
+  <div class="col-xl-4 col-lg-12">
+
+    <!-- Subscribe banner -->
+    <div class="subscribe-card fade-in-up stagger-2">
+      <span class="subscribe-card-emoji">🔔</span>
+      <div class="subscribe-card-title">Never Miss an Admission!</div>
+      <p class="subscribe-card-sub">Instant updates via Email, WhatsApp, or Telegram from official sources. Free forever.</p>
+      <a href="{{ url_for('main.subscribe') }}" class="btn-subscribe">
+        <i class="fa fa-bell"></i> Subscribe Now
+      </a>
+    </div>
+
+    <!-- Trending Organizations -->
+    <div class="sidebar-card fade-in-up stagger-3">
+      <div class="sidebar-card-header">
+        <h3 class="sidebar-card-title"><i class="fa fa-fire text-danger mr-2" style="font-size:14px;"></i>Trending This Week</h3>
+        <span style="background:#fff5f5;color:#e53e3e;font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;">
+          HOT
+        </span>
+      </div>
+      <div class="sidebar-card-body" style="padding-top:8px; padding-bottom:8px;">
+        {% if trending %}
+          {% for org, count in trending %}
+            <div class="trend-item">
+              <span class="trend-num {% if loop.index <= 3 %}top3{% endif %}">{{ loop.index }}</span>
+              <a href="{{ url_for('main.index', org_id=org.id) }}" class="trend-org-name" title="{{ org.name }}">
+                {{ org.name }}
+              </a>
+              <span class="trend-count">{{ count }}</span>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="fa fa-chart-line d-block mb-2" style="font-size:24px;opacity:0.3;"></i>
+            <span style="font-size:12.5px;">No active trends yet.</span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Browse by Category -->
+    <div class="sidebar-card fade-in-up stagger-4">
+      <div class="sidebar-card-header">
+        <h3 class="sidebar-card-title"><i class="fa fa-tags text-primary mr-2" style="font-size:14px;"></i>Browse by Category</h3>
+      </div>
+      <div class="sidebar-card-body">
+        <div class="d-flex flex-wrap" style="gap:8px;">
+          <a href="{{ url_for('main.index') }}" class="cat-chip {% if not selected_cat %}active{% endif %}">
+            All
+          </a>
+          {% for cat in categories %}
+            <a href="{{ url_for('main.index', category=cat) }}" class="cat-chip {% if selected_cat == cat %}active{% endif %}">
+              {{ cat|capitalize }}
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick tip -->
+    <div class="sidebar-card" style="background:linear-gradient(135deg,rgba(47,76,221,0.04),rgba(138,79,255,0.04)); border:1px solid rgba(47,76,221,0.1);">
+      <div class="sidebar-card-body" style="padding:16px;">
+        <div style="font-size:20px; margin-bottom:8px;">💡</div>
+        <div style="font-size:12.5px;font-weight:700;color:#1a202c;margin-bottom:4px;">Pro Tip</div>
+        <div style="font-size:12px;color:#6b7280;line-height:1.5;">
+          Use the search bar to filter by keyword, state, or category. New announcements appear automatically — no refresh needed!
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ===================================================
+//  UPDATES FEED — REAL-TIME SSE + UI LOGIC
+// ===================================================
+let pendingNotifications = [];
+const pendingBanner    = document.getElementById('new-updates-banner');
+const pendingCount     = document.getElementById('new-updates-count');
+
+// ---- Category color map ----
+const catClass = {
+  admission:   'cat-admission',
+  exam:        'cat-exam',
+  result:      'cat-result',
+  scholarship: 'cat-scholarship',
+  policy:      'cat-policy',
+};
+
+// ---- SSE connection ----
+const sse = new EventSource('/stream-events');
+
+sse.addEventListener('published_notification', function(e) {
+  const notif = JSON.parse(e.data);
+
+  // Client-side filter check
+  const qElem    = document.getElementById('q');
+  const stateEl  = document.getElementById('state-filter');
+  const catEl    = document.getElementById('category-filter');
+
+  const curSearch = qElem   ? qElem.value.trim().toLowerCase()  : '';
+  const curState  = stateEl ? stateEl.value                      : '';
+  const curCat    = catEl   ? catEl.value                        : '';
+
+  if (curState && notif.state !== curState)       return;
+  if (curCat   && notif.category !== curCat)      return;
+  if (curSearch) {
+    const matchT = notif.title.toLowerCase().includes(curSearch);
+    const matchO = notif.organization_name.toLowerCase().includes(curSearch);
+    if (!matchT && !matchO) return;
+  }
+
+  // Build card element
+  const card = document.createElement('div');
+  const cls  = catClass[notif.category.toLowerCase()] || 'cat-other';
+  card.className = `notif-card-v2 ${cls} fade-in-up`;
+  card.dataset.notifId = notif.id || '';
+
+  const detailsBtn = notif.seo_url
+    ? `<a href="/notifications/${notif.seo_url}" class="btn-read-more" aria-label="Read details">Read Details <i class="fa fa-arrow-right"></i></a>`
+    : `<span style="background:#f3f4f6;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:600;color:#9ca3af;"><i class="fa fa-circle-notch fa-spin mr-1"></i> Generating…</span>`;
+
+  const catBadgeClass = `badge-${notif.category.toLowerCase()}`;
+
+  card.innerHTML = `
+    <div class="card-inner">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center" style="gap:10px; min-width:0; flex:1;">
+          <div class="notif-org-badge college"><i class="fa fa-graduation-cap"></i></div>
+          <div style="min-width:0;">
+            <div class="font-weight-bold text-truncate" style="font-size:13px;color:#1a202c;max-width:300px;" title="${notif.organization_name}">${notif.organization_name}</div>
+            ${notif.state ? `<div style="font-size:11px;color:#9ca3af;"><i class="fa fa-map-marker-alt mr-1" style="font-size:9px;"></i>${notif.state}</div>` : ''}
+          </div>
+        </div>
+        <span class="${catBadgeClass}">${notif.category}</span>
+      </div>
+
+      <div class="notif-title mt-2 mb-1">
+        ${notif.seo_url ? `<a href="/notifications/${notif.seo_url}">${notif.title}</a>` : notif.title}
+      </div>
+      <p class="notif-body">${notif.body_preview}</p>
+
+      <div class="notif-card-footer">
+        <span class="live-indicator"><span class="live-dot"></span> Live</span>
+        ${detailsBtn}
+      </div>
+    </div>
+  `;
+
+  pendingNotifications.push(card);
+  pendingCount.textContent = pendingNotifications.length;
+  pendingBanner.style.display = 'block';
+});
+
+// ---- Toast click: reveal all pending ----
+pendingBanner.addEventListener('click', function () {
+  const region = document.querySelector('[role="region"][aria-label="Announcements List"]');
+  if (!region) return;
+
+  // Remove empty state if present
+  const empty = region.querySelector('.empty-feed');
+  if (empty) {
+    empty.remove();
+    const container = document.createElement('div');
+    container.id = 'announcements-container';
+    const sectionHdr = region.querySelector('.section-hdr');
+    if (sectionHdr) {
+      sectionHdr.parentNode.insertBefore(container, sectionHdr.nextSibling);
+    } else {
+      region.appendChild(container);
+    }
+  }
+
+  const target = document.getElementById('announcements-container');
+  if (!target) return;
+
+  // Insert pending cards at top
+  pendingNotifications.forEach(c => target.insertBefore(c, target.firstChild));
+
+  // Update counter badges
+  const totalBadges = document.querySelectorAll('.feed-stat-num');
+  totalBadges.forEach(b => {
+    const txt = b.textContent.trim();
+    const num = parseInt(txt, 10);
+    if (!isNaN(num)) b.textContent = num + pendingNotifications.length;
+  });
+
+  pendingNotifications = [];
+  pendingBanner.style.display = 'none';
+
+  // Smooth scroll to top of announcements
+  region.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// ---- Auto-select first on load ----
+window.addEventListener('DOMContentLoaded', () => {
+  const firstCard = document.querySelector('.notif-card-v2');
+  if (firstCard) firstCard.style.animationDelay = '0s';
+});
+</script>
+{% endblock %}

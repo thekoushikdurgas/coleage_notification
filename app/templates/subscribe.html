@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Subscribe Alerts | FormsADDA Real-Time Notifications{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-9 col-lg-10">
+        <div class="card" style="border-radius: 16px !important;">
+            <div class="card-header border-0 pb-0 d-flex flex-column align-items-center text-center pt-4">
+                <div style="width:64px; height:64px; border-radius:50%; background:rgba(47,76,221,0.1); display:flex; align-items:center; justify-content:center;" class="mb-3">
+                    <i class="fa fa-bell text-primary" style="font-size: 28px;"></i>
+                </div>
+                <h3 class="card-title text-black font-weight-bold" style="font-family:'Outfit', sans-serif;">Subscribe to Real-Time Alerts</h3>
+                <p class="text-muted" style="font-size:13px; max-width: 540px;">Configure alert filters. FormsADDA monitors official feeds and notifies you via matching channels.</p>
+            </div>
+            
+            <div class="card-body px-4 px-md-5 pb-5">
+                <form action="{{ url_for('main.subscribe') }}" method="POST" class="needs-validation" novalidate>
+                    
+                    <!-- Section 1: Contacts -->
+                    <h5 class="text-black font-weight-bold mb-3 border-bottom pb-2 d-flex align-items-center" style="font-size: 15px; font-family:'Outfit', sans-serif;">
+                        <span class="step-pill">1</span> Contact Information
+                    </h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6 form-group">
+                            <label for="email" class="text-black font-weight-bold" style="font-size: 13px;">Email Address <span class="text-danger" aria-hidden="true">*</span><span class="sr-only">(required)</span></label>
+                            <input type="email" id="email" name="email" class="form-control" required aria-required="true" placeholder="email@student.com" style="border-radius:10px;" aria-describedby="email-hint">
+                            <div class="invalid-feedback">Please provide a valid email address.</div>
+                            <small id="email-hint" class="text-muted" style="font-size: 11px;">Used for email digests and newsletters</small>
+                        </div>
+                        
+                        <div class="col-md-6 form-group">
+                            <label for="phone" class="text-black font-weight-bold" style="font-size: 13px;">Mobile Number</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" pattern="^\+?\d{10,15}$" placeholder="e.g. +91 98765 43210" style="border-radius:10px;" aria-describedby="phone-hint">
+                            <div class="invalid-feedback">Please provide a valid mobile number (10-15 digits).</div>
+                            <small id="phone-hint" class="text-muted" style="font-size: 11px;">Used for WhatsApp, Telegram, and SMS alerts</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Section 2: Filters -->
+                    <h5 class="text-black font-weight-bold mb-3 border-bottom pb-2 d-flex align-items-center" style="font-size: 15px; font-family:'Outfit', sans-serif;">
+                        <span class="step-pill">2</span> Filter Criteria
+                    </h5>
+                    <p class="text-muted mb-3" style="font-size: 11px; margin-top:-8px;">Leave filters blank to receive all updates matching the channel.</p>
+                    <div class="row mb-4">
+                        <div class="col-md-6 form-group">
+                            <label for="org_id" class="text-black font-weight-bold" style="font-size: 13px;">Organization / College</label>
+                            <select id="org_id" name="org_id" class="form-control default-select" data-live-search="true">
+                                <option value="">All Organizations</option>
+                                <optgroup label="Regulatory Bodies">
+                                    {% for reg in regulators %}
+                                        <option value="{{ reg.id }}">{{ reg.name }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="Educational Boards">
+                                    {% for board in boards %}
+                                        <option value="{{ board.id }}">{{ board.name }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                                <optgroup label="Colleges (First 100)">
+                                    {% for col in colleges %}
+                                        <option value="{{ col.id }}" {% if request.args.get('org_id')|int == col.id %}selected{% endif %}>{{ col.name }}</option>
+                                    {% endfor %}
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3 form-group">
+                            <label for="sub-state" class="text-black font-weight-bold" style="font-size: 13px;">State</label>
+                            <select id="sub-state" name="state" class="form-control default-select">
+                                <option value="">All States</option>
+                                {% for state in states %}
+                                    <option value="{{ state }}">{{ state }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3 form-group">
+                            <label for="sub-category" class="text-black font-weight-bold" style="font-size: 13px;">Category</label>
+                            <select id="sub-category" name="category" class="form-control default-select">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Section 3: Channels -->
+                    <h5 class="text-black font-weight-bold mb-3 border-bottom pb-2 d-flex align-items-center" style="font-size: 15px; font-family:'Outfit', sans-serif;" id="channels-legend">
+                        <span class="step-pill" aria-hidden="true">3</span> Delivery Channels
+                    </h5>
+                    
+                    <fieldset aria-labelledby="channels-legend">
+                        <legend class="sr-only">Choose delivery channels for notifications</legend>
+                    <div class="row mb-4 px-2">
+                        <!-- Email Card -->
+                        <div class="col-xl col-md-4 col-sm-6 mb-3 px-2">
+                            <label class="channel-card w-100 h-100 mb-0" id="card_ch_email" onclick="updatePreviewMockup('email')">
+                                <input type="checkbox" name="channels" id="ch_email" value="email" checked onchange="toggleChannelCard('email', this)">
+                                <div class="channel-check-mark" aria-hidden="true"></div>
+                                <i class="fa fa-envelope channel-icon text-primary mt-2" aria-hidden="true"></i>
+                                <span class="channel-label mt-1">Email</span>
+                                <span class="channel-desc mt-1">Daily digests and critical updates</span>
+                            </label>
+                        </div>
+                        <!-- WhatsApp Card -->
+                        <div class="col-xl col-md-4 col-sm-6 mb-3 px-2">
+                            <label class="channel-card w-100 h-100 mb-0" id="card_ch_whatsapp" onclick="updatePreviewMockup('whatsapp')">
+                                <input type="checkbox" name="channels" id="ch_whatsapp" value="whatsapp" checked onchange="toggleChannelCard('whatsapp', this)">
+                                <div class="channel-check-mark" aria-hidden="true"></div>
+                                <i class="fa-brands fa-whatsapp channel-icon text-success mt-2" aria-hidden="true"></i>
+                                <span class="channel-label mt-1">WhatsApp</span>
+                                <span class="channel-desc mt-1">Instant updates directly on chat</span>
+                            </label>
+                        </div>
+                        <!-- Telegram Card -->
+                        <div class="col-xl col-md-4 col-sm-6 mb-3 px-2">
+                            <label class="channel-card w-100 h-100 mb-0" id="card_ch_telegram" onclick="updatePreviewMockup('telegram')">
+                                <input type="checkbox" name="channels" id="ch_telegram" value="telegram" onchange="toggleChannelCard('telegram', this)">
+                                <div class="channel-check-mark" aria-hidden="true"></div>
+                                <i class="fa-brands fa-telegram channel-icon text-info mt-2" aria-hidden="true"></i>
+                                <span class="channel-label mt-1">Telegram</span>
+                                <span class="channel-desc mt-1">Join broadcast feed channel</span>
+                            </label>
+                        </div>
+                        <!-- Web Push Card -->
+                        <div class="col-xl col-md-4 col-sm-6 mb-3 px-2">
+                            <label class="channel-card w-100 h-100 mb-0" id="card_ch_push" onclick="updatePreviewMockup('push')">
+                                <input type="checkbox" name="channels" id="ch_push" value="push" onchange="toggleChannelCard('push', this)">
+                                <div class="channel-check-mark" aria-hidden="true"></div>
+                                <i class="fa fa-bell channel-icon text-warning mt-2" aria-hidden="true"></i>
+                                <span class="channel-label mt-1">Web Push</span>
+                                <span class="channel-desc mt-1">Direct browser pop-up alerts</span>
+                            </label>
+                        </div>
+                        <!-- SMS Card -->
+                        <div class="col-xl col-md-4 col-sm-6 mb-3 px-2">
+                            <label class="channel-card w-100 h-100 mb-0" id="card_ch_sms" onclick="updatePreviewMockup('sms')">
+                                <input type="checkbox" name="channels" id="ch_sms" value="sms" onchange="toggleChannelCard('sms', this)">
+                                <div class="channel-check-mark" aria-hidden="true"></div>
+                                <i class="fa fa-commenting channel-icon text-secondary mt-2" aria-hidden="true"></i>
+                                <span class="channel-label mt-1">SMS</span>
+                                <span class="channel-desc mt-1">Fallback flash carrier messages</span>
+                            </label>
+                        </div>
+                    </div>
+                    </fieldset>
+                    
+                    <!-- Live Preview Section -->
+                    <div class="border-top pt-4 mt-4 mb-4">
+                        <h5 class="text-black font-weight-bold mb-3 d-flex align-items-center" style="font-size: 15px; font-family:'Outfit', sans-serif;">
+                            <i class="fa fa-eye text-primary mr-2"></i> Live Alert Preview
+                        </h5>
+                        <p class="text-muted mb-3" style="font-size: 11.5px; margin-top:-8px;">Preview how notifications are custom-rendered on the selected channel.</p>
+                        <div class="d-flex justify-content-center bg-transparent py-4 border rounded" style="min-height: 260px; border-style: dashed !important; background:#fcfdfe !important; border-color:#dcdfe6 !important;">
+                            <div id="preview-mockup-viewport" class="w-100 d-flex justify-content-center align-items-center">
+                                <!-- Rendered dynamically by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end border-top pt-3">
+                        <button type="submit" class="btn btn-primary" style="border-radius:10px; font-weight:600;"><i class="fa fa-check-circle mr-1"></i> Register Subscription</button>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-light border ml-2" style="border-radius:10px; font-weight:600;">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleChannelCard(channel, checkbox) {
+        const card = document.getElementById('card_ch_' + channel);
+        if (card) {
+            if (checkbox.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        }
+    }
+
+    function updatePreviewMockup(channel) {
+        const viewport = document.getElementById('preview-mockup-viewport');
+        let html = '';
+        
+        const sampleOrg = "National Testing Agency (NTA)";
+        const sampleTitle = "JEE Main 2026 Registration Portal Opened";
+        const sampleText = "Dear Candidate,\n\nNTA has released the online application forms for JEE Main 2026. Applying starts on 21 June 2026. The deadline is 20 July 2026.\n\nVerify details and apply on the official portal:\nhttps://jeemain.nta.nic.in\n\n--\nFormsADDA Alerts";
+        
+        if (channel === 'whatsapp') {
+            html = `
+                <div class="whatsapp-mockup" style="width:280px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+                    <div class="wa-header" style="padding: 10px 14px; background: linear-gradient(135deg, #075e54, #128c7e);">
+                        <div class="wa-avatar" style="width:32px; height:32px; font-size:16px; background: rgba(255,255,255,0.2);"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div class="wa-header-info">
+                            <span class="wa-title" style="font-size:12.5px; font-weight:700;">FormsADDA Alerts</span>
+                            <span class="wa-status" style="font-size:9.5px; opacity:0.8;">Official Business Account</span>
+                        </div>
+                    </div>
+                    <div class="wa-chat-body" style="min-height: 140px; padding: 12px; background: #efeae2;">
+                        <div class="wa-bubble" style="max-width: 90%; border-radius: 0 10px 10px 10px; padding: 10px; background:#fff;">
+                            <div class="wa-bubble-content" style="font-size:11.5px; line-height:1.4; color:#111;">${sampleText.replace(/\n/g, '<br>')}</div>
+                            <span class="wa-bubble-time" style="font-size:8.5px; color:#999; display:block; text-align:right; margin-top:4px;">10:42 AM</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (channel === 'telegram') {
+            html = `
+                <div class="telegram-mockup" style="width:280px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+                    <div class="tg-header" style="padding: 10px 14px; background: linear-gradient(135deg, #2AABEE, #229ED9);">
+                        <div class="tg-avatar" style="width:32px; height:32px; font-size:15px; background: rgba(255,255,255,0.2);"><i class="fa-solid fa-paper-plane"></i></div>
+                        <div class="tg-header-info">
+                            <span class="tg-title" style="font-size:12.5px; font-weight:700;">FormsADDA Updates</span>
+                            <span class="tg-subscribers" style="font-size:9.5px; opacity:0.8;">84.2K subscribers</span>
+                        </div>
+                    </div>
+                    <div class="tg-chat-body" style="min-height: 140px; padding: 12px; background:#fff;">
+                        <div class="tg-post" style="padding: 10px; border-radius: 10px; background:#f0f4ff; border-left:3px solid #2AABEE;">
+                            <div class="tg-post-author" style="font-size:11.5px; font-weight:700; color:#2AABEE; margin-bottom:4px;">FormsADDA Admin</div>
+                            <div class="tg-post-content" style="font-size:11px; line-height:1.4;">${sampleText.replace(/\n/g, '<br>')}</div>
+                            <div class="tg-post-footer" style="margin-top:6px; display:flex; justify-content:space-between; align-items:center;">
+                                <span class="views" style="font-size:8.5px; color:#999;"><i class="fa-regular fa-eye"></i> 1.2K</span>
+                                <span class="tg-time" style="font-size:8.5px; color:#999;">10:42 AM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (channel === 'email') {
+            html = `
+                <div class="email-mockup" style="width:340px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); background:#fff; border-radius:8px; border:1px solid #e5e7eb;">
+                    <div class="em-header" style="padding: 10px 14px; background:#f7f8fc; border-bottom:1px solid #e5e7eb;">
+                        <div class="em-meta-row" style="font-size:10.5px; color:#555;"><strong>Subject:</strong> [FormsADDA] ${sampleTitle}</div>
+                    </div>
+                    <div class="em-body" style="padding: 14px;">
+                        <div class="em-logo" style="font-size: 16px; font-weight:800; text-align:center; margin-bottom:10px; font-family:'Outfit', sans-serif;"><span style="color:#8a4fff;">Forms</span>ADDA</div>
+                        <div class="em-content">
+                            <h6 class="text-black font-weight-bold mb-1" style="font-size:12.5px; font-family:'Outfit', sans-serif;">${sampleTitle}</h6>
+                            <p style="font-size:11px; line-height:1.5; color:#4a5568; margin-bottom: 8px;">${sampleText.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (channel === 'push') {
+            html = `
+                <div class="push-mockup">
+                    <div class="phone-frame" style="width: 180px; border-radius: 24px; padding: 8px; background:#1a1a2e;">
+                        <div class="phone-screen" style="height: 240px; border-radius: 18px; padding: 14px 10px; background: linear-gradient(135deg, #2d1b69, #11023b); position:relative; overflow:hidden;">
+                            <div class="lockscreen-time" style="font-size: 22px; color:#fff; text-align:center; margin-bottom:2px; font-weight:300;">10:42 AM</div>
+                            <div class="lockscreen-date" style="font-size: 8px; color:rgba(255,255,255,0.6); text-align:center; margin-bottom:14px;">Monday, June 22</div>
+                            
+                            <div class="push-banner" style="padding: 8px; border-radius: 10px; background:rgba(255,255,255,0.92); backdrop-filter:blur(8px);">
+                                <div class="push-banner-header" style="margin-bottom:4px; gap:4px; display:flex; align-items:center;">
+                                    <span class="push-app-logo" style="width:14px; height:14px; font-size:6px; border-radius:3px; background:linear-gradient(135deg, #8a4fff, #2f4cdd); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800;">FA</span>
+                                    <span class="push-app-name" style="font-size:8px; font-weight:700; color:#222;">FormsADDA</span>
+                                </div>
+                                <div class="push-banner-body">
+                                    <strong style="font-size: 9.5px; line-height:1.1; color:#111; display:block;">${sampleTitle}</strong>
+                                    <p style="font-size: 8.5px; line-height:1.1; color:#555; margin:0;">FormsADDA monitors official feeds and notifies you...</p>
+                                </div>
+                            </div>
+                            <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; color:rgba(255,255,255,0.4); font-size:8px;"><i class="fa fa-chevron-right"></i> Slide to read</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            // SMS
+            html = `
+                <div class="sms-mockup" style="width: 260px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); background:#fff; border-radius:10px; border:1px solid #e5e7eb;">
+                    <div class="sms-header" style="padding: 8px 12px; background:#f5f5f5; display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px; color:#999;"><i class="fa fa-user-circle"></i></span>
+                        <span class="sms-sender" style="font-size:12px; font-weight:700;">JD-FRMSAD</span>
+                    </div>
+                    <div class="sms-body" style="padding: 12px; min-height: 90px; background:#f9f9f9;">
+                        <div class="sms-bubble" style="padding: 10px; border-radius: 0 10px 10px 10px; font-size:11px; background:#fff; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                            <p style="margin: 0; line-height: 1.4; color:#222;">${sampleText.substring(0, 140)}...</p>
+                            <span class="sms-time" style="font-size:8px; color:#999; display:block; margin-top:4px;">10:42 AM</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        viewport.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Initialize cards on load
+        document.querySelectorAll('.channel-card input[type="checkbox"]').forEach(checkbox => {
+            const val = checkbox.value;
+            toggleChannelCard(val, checkbox);
+        });
+
+        // Set WhatsApp mockup as default
+        updatePreviewMockup('whatsapp');
+
+        // Form validation
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+{% endblock %}

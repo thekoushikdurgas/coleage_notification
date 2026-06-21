@@ -762,3 +762,124 @@ h1, h2, h3, h4, h5, h6,
     box-shadow: 0 6px 18px rgba(47, 76, 221, 0.35) !important;
 }
 
+/* ----------------------------------------------------------
+   21. PREMIUM DROPDOWN & SELECTPICKER STYLE OVERRIDES
+   ---------------------------------------------------------- */
+/* Bootstrap Select Button (The Dropdown Trigger) */
+.bootstrap-select > .dropdown-toggle {
+    background-color: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 10px 16px !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.bootstrap-select > .dropdown-toggle:hover {
+    border-color: #cbd5e1 !important;
+    background-color: #f8fafc !important;
+}
+.bootstrap-select > .dropdown-toggle:focus,
+.bootstrap-select.show > .dropdown-toggle {
+    border-color: var(--fa-primary) !important;
+    box-shadow: 0 0 0 3px rgba(47, 76, 221, 0.12) !important;
+    outline: none !important;
+}
+
+/* Dropdown Menu Wrapper */
+.dropdown-menu {
+    border-radius: 14px !important;
+    border: 1px solid rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
+    padding: 8px !important;
+    background-color: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(12px) !important;
+    animation: fadeInDropdown 0.2s ease-out !important;
+}
+
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Dropdown Items styling */
+.dropdown-menu .dropdown-item,
+.bootstrap-select .dropdown-menu li a {
+    padding: 10px 16px !important;
+    margin: 2px 4px !important;
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    color: #334155 !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+/* Hover State */
+.dropdown-menu .dropdown-item:hover,
+.bootstrap-select .dropdown-menu li a:hover,
+.bootstrap-select .dropdown-menu li.active a {
+    background-color: rgba(47, 76, 221, 0.06) !important;
+    color: var(--fa-primary) !important;
+}
+
+/* Selected State */
+.bootstrap-select .dropdown-menu li.selected a,
+.dropdown-menu .dropdown-item.active {
+    background: linear-gradient(135deg, var(--fa-primary), var(--fa-accent)) !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+
+/* Checkmark indicator for bootstrap-select */
+.bootstrap-select .dropdown-menu li.selected a span.check-mark {
+    color: #ffffff !important;
+    margin-left: auto !important;
+}
+
+/* Search Box Container */
+.bootstrap-select .bs-searchbox {
+    padding: 8px 8px 12px 8px !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    margin-bottom: 8px !important;
+}
+.bootstrap-select .bs-searchbox input.form-control {
+    border-radius: 8px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    color: #1e293b !important;
+    transition: all 0.2s ease !important;
+}
+.bootstrap-select .bs-searchbox input.form-control:focus {
+    border-color: var(--fa-primary) !important;
+    box-shadow: 0 0 0 3px rgba(47, 76, 221, 0.1) !important;
+}
+
+/* Text alignment & spacing for count badges inside options */
+.bootstrap-select .dropdown-menu li a span.text {
+    display: flex !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    align-items: center !important;
+}
+.bootstrap-select .dropdown-menu li a span.text small.text-muted {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 10px;
+    transition: all 0.2s;
+}
+.bootstrap-select .dropdown-menu li.selected a span.text small.text-muted {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff !important;
+}
+
+

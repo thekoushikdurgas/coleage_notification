@@ -713,3 +713,52 @@ h1, h2, h3, h4, h5, h6,
     transform: none !important;
   }
 }
+
+/* ----------------------------------------------------------
+   20. EXTRA PREMIUM SIDEBAR & NAVIGATION STYLES
+   ---------------------------------------------------------- */
+.deznav .metismenu li a {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 10px !important;
+    margin: 4px 12px;
+    padding: 12px 16px;
+}
+.deznav .metismenu li a:hover {
+    background: rgba(47, 76, 221, 0.06) !important;
+    color: var(--fa-primary) !important;
+    transform: translateX(4px);
+}
+.deznav .metismenu li.mm-active a {
+    background: linear-gradient(135deg, var(--fa-primary), var(--fa-accent)) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px rgba(47, 76, 221, 0.25);
+}
+
+.sidebar-crawl-card {
+    background: linear-gradient(135deg, rgba(47, 76, 221, 0.04), rgba(138, 79, 255, 0.08)) !important;
+    border-radius: 14px !important;
+    padding: 18px 16px !important;
+    margin: 20px 14px !important;
+    border: 1px solid rgba(138, 79, 255, 0.15) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02) !important;
+}
+.sidebar-crawl-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(138, 79, 255, 0.35) !important;
+    box-shadow: 0 8px 24px rgba(47, 76, 221, 0.08) !important;
+}
+.sidebar-crawl-card .crawl-btn {
+    border-radius: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    font-size: 11px !important;
+    letter-spacing: 0.7px !important;
+    box-shadow: 0 4px 12px rgba(47, 76, 221, 0.2) !important;
+    transition: all 0.25s ease !important;
+}
+.sidebar-crawl-card .crawl-btn:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 18px rgba(47, 76, 221, 0.35) !important;
+}
+

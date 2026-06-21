@@ -21,6 +21,17 @@ loader_status = {"status": "Idle", "target": ""}
 sse_listeners = []
 listeners_lock = threading.Lock()
 
+def double_frequency(frequency):
+    """
+    Doubles the frequency interval. e.g., '30s' -> '60s', '1h' -> '2h'.
+    """
+    match = re.match(r"^(\d+)([smhd])$", frequency.strip())
+    if not match:
+        return frequency
+    val = int(match.group(1))
+    unit = match.group(2)
+    return f"{val * 2}{unit}"
+
 def calculate_next_run(frequency, base_time=None):
     """
     Calculates next execution time based on frequency string.
@@ -124,6 +135,9 @@ def check_run_completion(run_id):
         if not run:
             return
             
+        if run.status == 'Completed':
+            return
+            
         processed_count = CrawlerLog.query.filter_by(run_id=run_id).count()
         if processed_count >= run.targets_count:
             # Complete the run
@@ -141,6 +155,40 @@ def check_run_completion(run_id):
             
             db.session.commit()
             log_to_workers(f"Scheduled task run #{run.id} for '{run.scheduled_task.name}' completed. Status: {run.status}, Success: {successes}, Failures: {failures}, Notifications: {notifs}", "system")
+            
+            # --- Dynamic Schedule Scaling (Backoff / Restoral) ---
+            task = run.scheduled_task
+            if task and run.targets_count > 0:
+                non_dup_count = Notification.query.filter_by(run_id=run_id, is_duplicate=False).count()
+                if non_dup_count == 0:
+                    # All websites had no update or were duplicates! Double the frequency interval.
+                    original_freq = task.frequency
+                    if not task.base_frequency:
+                        task.base_frequency = original_freq
+                        
+                    new_freq = double_frequency(original_freq)
+                    if new_freq != original_freq:
+                        task.frequency = new_freq
+                        # Recalculate next run based on last_run_at
+                        if task.status == 'Active' and task.last_run_at:
+                            task.next_run_at = calculate_next_run(task.frequency, task.last_run_at)
+                        
+                        db.session.commit()
+                        log_to_workers(f"Task '{task.name}' backed off (no updates/duplicates). Frequency increased from {original_freq} to {task.frequency}. Next run scheduled at {task.next_run_at}.", "system")
+                else:
+                    # At least one website had a new non-duplicate notification! Restore base frequency.
+                    if task.base_frequency:
+                        old_freq = task.frequency
+                        task.frequency = task.base_frequency
+                        task.base_frequency = None
+                        
+                        if task.status == 'Active' and task.last_run_at:
+                            task.next_run_at = calculate_next_run(task.frequency, task.last_run_at)
+                            
+                        db.session.commit()
+                        log_to_workers(f"Task '{task.name}' received new announcements. Restored frequency from {old_freq} back to base frequency {task.frequency}. Next run scheduled at {task.next_run_at}.", "system")
+            # ----------------------------------------------------
+            
             broadcast_status()
     except Exception as e:
         print(f"Error checking run completion: {e}")

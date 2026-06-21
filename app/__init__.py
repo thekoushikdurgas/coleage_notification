@@ -15,6 +15,15 @@ def create_app(config_class=Config):
     # Initialize database
     db.init_app(app)
     
+    # Ensure database schema has base_frequency column
+    with app.app_context():
+        try:
+            db.create_all()
+            db.session.execute(db.text("ALTER TABLE scheduled_tasks ADD COLUMN base_frequency VARCHAR(50)"))
+            db.session.commit()
+        except Exception:
+            pass
+    
     # Register routes blueprint
     from app.routes import main_bp
     app.register_blueprint(main_bp)

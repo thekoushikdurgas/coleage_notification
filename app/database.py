@@ -157,6 +157,7 @@ class ScheduledTask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     frequency = db.Column(db.String(50), nullable=False)  # e.g. '30m', '1h', '1d'
+    base_frequency = db.Column(db.String(50), nullable=True)  # Store original frequency when backed off
     target_type = db.Column(db.String(50), nullable=False)  # 'selected', 'state', 'all'
     target_query = db.Column(db.Text, nullable=True)  # Comma-separated college IDs or State Name
     status = db.Column(db.String(50), default='Active')  # 'Active', 'Paused'

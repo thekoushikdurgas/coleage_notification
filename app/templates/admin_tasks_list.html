@@ -106,6 +106,24 @@
                                                 {{ task.frequency }}
                                             {% endif %}
                                         </span>
+                                        {% if task.base_frequency %}
+                                            <div class="mt-1">
+                                                <span class="badge badge-xs badge-warning" style="font-size: 10px;" title="Backed off from original frequency: {{ task.base_frequency }}">
+                                                    <i class="fa fa-arrow-trend-down mr-1"></i> Backed off (Base: 
+                                                    {% if task.base_frequency.endswith('s') %}
+                                                        {{ task.base_frequency[:-1] }}s
+                                                    {% elif task.base_frequency.endswith('m') %}
+                                                        {{ task.base_frequency[:-1] }}m
+                                                    {% elif task.base_frequency.endswith('h') %}
+                                                        {{ task.base_frequency[:-1] }}h
+                                                    {% elif task.base_frequency.endswith('d') %}
+                                                        {{ task.base_frequency[:-1] }}d
+                                                    {% else %}
+                                                        {{ task.base_frequency }}
+                                                    {% endif %})
+                                                </span>
+                                            </div>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {% if task.status == 'Active' %}

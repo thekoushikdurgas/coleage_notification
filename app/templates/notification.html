@@ -397,26 +397,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function cleanMarkdown(text) {
         if (!text) return "";
         
-        // Decode HTML entities if they were double-escaped
-        const txt = document.createElement("textarea");
-        txt.innerHTML = text;
-        let decoded = txt.value;
+        let cleaned = text;
         
-        // Replace common HTML tags with Markdown counterparts to prevent marked parsing issues
-        decoded = decoded
-            .replace(/<h4>/gi, "\n#### ")
-            .replace(/<\/h4>/gi, "\n")
-            .replace(/<h3>/gi, "\n### ")
-            .replace(/<\/h3>/gi, "\n")
-            .replace(/<h2>/gi, "\n## ")
-            .replace(/<\/h2>/gi, "\n")
-            .replace(/<h1>/gi, "\n# ")
-            .replace(/<\/h1>/gi, "\n")
-            .replace(/<br\s*\/?>/gi, "\n")
-            .replace(/&lt;br\s*\/?&gt;/gi, "\n")
-            .replace(/>>\s*/g, "> ") // fix double quote angle bracket lists
+        // Replace both raw and escaped versions of the tags (handles single, double, or triple escaping)
+        cleaned = cleaned
+            .replace(/(&amp;lt;|&lt;|<)h4(&amp;gt;|&gt;|>)/gi, "\n#### ")
+            .replace(/(&amp;lt;|&lt;|<)\/h4(&amp;gt;|&gt;|>)/gi, "\n")
+            .replace(/(&amp;lt;|&lt;|<)h3(&amp;gt;|&gt;|>)/gi, "\n### ")
+            .replace(/(&amp;lt;|&lt;|<)\/h3(&amp;gt;|&gt;|>)/gi, "\n")
+            .replace(/(&amp;lt;|&lt;|<)h2(&amp;gt;|&gt;|>)/gi, "\n## ")
+            .replace(/(&amp;lt;|&lt;|<)\/h2(&amp;gt;|&gt;|>)/gi, "\n")
+            .replace(/(&amp;lt;|&lt;|<)h1(&amp;gt;|&gt;|>)/gi, "\n# ")
+            .replace(/(&amp;lt;|&lt;|<)\/h1(&amp;gt;|&gt;|>)/gi, "\n")
+            .replace(/(&amp;lt;|&lt;|<)br\s*\/?(&amp;gt;|&gt;|>)/gi, "\n")
+            .replace(/>>\s*|&amp;gt;&amp;gt;\s*|&gt;&gt;\s*/g, "> ") // fix double quote angle brackets
             .replace(/\*\*\s*\*\*/g, ""); // clean up empty bold artifacts
             
+        // Decode HTML entities if they were double-escaped
+        const txt = document.createElement("textarea");
+        txt.innerHTML = cleaned;
+        let decoded = txt.value;
+        
+        // Do a second pass of entity decoding just in case
+        if (decoded.includes("&lt;") || decoded.includes("&gt;") || decoded.includes("&amp;")) {
+            txt.innerHTML = decoded;
+            decoded = txt.value;
+        }
+        
         return decoded;
     }
     

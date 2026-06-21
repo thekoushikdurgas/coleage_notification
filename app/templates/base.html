@@ -256,10 +256,10 @@
 
                 {% if session.get('user_role') == 'admin' %}
                 <!-- Sidebar Bottom Card -->
-                <div class="add-menu-sidebar" style="background:linear-gradient(135deg,rgba(47,76,221,0.08),rgba(138,79,255,0.08));border-radius:12px;padding:16px;margin:16px 12px;border:1px solid rgba(138,79,255,0.15);">
+                <div class="sidebar-crawl-card">
                     <div style="font-size:22px;margin-bottom:8px;">🎓</div>
                     <p style="font-size:11.5px;color:#6b7280;margin-bottom:10px;line-height:1.4;">Monitor 53,000+ official Indian education portals in real-time.</p>
-                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-primary btn-xs btn-block" style="border-radius:8px;">Run Crawl</a>
+                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-primary btn-xs btn-block crawl-btn">Run Crawl</a>
                 </div>
                 {% endif %}
             </div>

@@ -170,6 +170,7 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: var(--fa-shadow) !important;
   border: none !important;
   transition: var(--fa-transition);
+  overflow: visible !important;
 }
 .card:hover {
   box-shadow: var(--fa-shadow-hover) !important;
@@ -823,9 +824,16 @@ h1, h2, h3, h4, h5, h6,
 /* Hover State */
 .dropdown-menu .dropdown-item:hover,
 .bootstrap-select .dropdown-menu li a:hover,
-.bootstrap-select .dropdown-menu li.active a {
-    background-color: rgba(47, 76, 221, 0.06) !important;
-    color: var(--fa-primary) !important;
+.bootstrap-select .dropdown-menu li.active a,
+.bootstrap-select .dropdown-menu li a:focus {
+    background: linear-gradient(135deg, var(--fa-primary), var(--fa-accent)) !important;
+    color: #ffffff !important;
+}
+.dropdown-menu .dropdown-item:hover *,
+.bootstrap-select .dropdown-menu li a:hover *,
+.bootstrap-select .dropdown-menu li.active a *,
+.bootstrap-select .dropdown-menu li a:focus * {
+    color: #ffffff !important;
 }
 
 /* Selected State */
@@ -834,6 +842,10 @@ h1, h2, h3, h4, h5, h6,
     background: linear-gradient(135deg, var(--fa-primary), var(--fa-accent)) !important;
     color: #ffffff !important;
     font-weight: 600 !important;
+}
+.bootstrap-select .dropdown-menu li.selected a *,
+.dropdown-menu .dropdown-item.active * {
+    color: #ffffff !important;
 }
 
 /* Checkmark indicator for bootstrap-select */

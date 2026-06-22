@@ -6,6 +6,7 @@ import re
 from datetime import datetime
 from app.database import db, Notification, GeneratedContent
 
+
 class AIEngine:
     @staticmethod
     def extract_dates_and_details(notif_id):
@@ -16,50 +17,66 @@ class AIEngine:
         notif = Notification.query.get(notif_id)
         if not notif:
             return
-            
+
         print(f"Running AI Extraction for notification ID {notif.id}...")
-        
+
         # Default extraction based on templates
         current_year = datetime.now().year
-        
+
         # Simple regex/pattern matching to find values in the body text
         body = notif.body
-        
+
         # Simulating AI Date extraction using text parsing
         notif.application_start_date = f"15 June {current_year}"
         notif.application_end_date = f"30 July {current_year}"
-        
+
         if "exam will be held on" in body:
             match = re.search(r"held on ([A-Za-z]+ \d+)", body)
-            notif.exam_date = f"{match.group(1)} {current_year}" if match else f"10 August {current_year}"
+            notif.exam_date = (
+                f"{match.group(1)} {current_year}"
+                if match
+                else f"10 August {current_year}"
+            )
         elif "exams will commence on" in body:
             match = re.search(r"commence on ([A-Za-z]+ \d+)", body)
-            notif.exam_date = f"{match.group(1)} {current_year}" if match else f"1 March {current_year}"
-            
+            notif.exam_date = (
+                f"{match.group(1)} {current_year}"
+                if match
+                else f"1 March {current_year}"
+            )
+
         if "counselling" in body.lower():
             notif.counselling_date = f"10 July {current_year}"
-            
+
         if "merit list" in body.lower():
             notif.merit_list_date = f"25 June {current_year}"
-            
+
         # Parse fees, scholarship, seat matrix, eligibility
         if "fee" in body.lower():
             match = re.search(r"fee is (Rs\.\s*[\d,]+)", body)
-            notif.fee_structure = match.group(1) if match else "Rs. 1,20,000 per semester"
-            
+            notif.fee_structure = (
+                match.group(1) if match else "Rs. 1,20,000 per semester"
+            )
+
         if "scholarship" in body.lower():
             notif.scholarship_details = "Merit-Cum-Means up to 100% tuition waiver"
-            
+
         if "seat" in body.lower() or "seats" in body.lower():
             match = re.search(r"seats:\s*(\d+)", body)
             notif.seat_matrix = f"{match.group(1)} seats" if match else "640 seats"
-            
+
         if "eligibility" in body.lower():
             match = re.search(r"criteria:\s*([^.]+)", body)
-            notif.eligibility = match.group(1).strip() if match else "Passed Class 12 with minimum 75% marks"
+            notif.eligibility = (
+                match.group(1).strip()
+                if match
+                else "Passed Class 12 with minimum 75% marks"
+            )
         else:
-            notif.eligibility = "Undergraduate: 10+2 passing; Post-graduate: Relevant Bachelor's Degree"
-            
+            notif.eligibility = (
+                "Undergraduate: 10+2 passing; Post-graduate: Relevant Bachelor's Degree"
+            )
+
         db.session.commit()
         print(f"AI Extraction complete for ID {notif.id}.")
 
@@ -72,41 +89,45 @@ class AIEngine:
         notif = Notification.query.get(notif_id)
         if not notif:
             return None
-            
+
         org = notif.organization
         print(f"Running AI Content Generation for: {notif.title}")
-        
+
         # Check if we already have generated content for this notification
         existing = GeneratedContent.query.filter_by(notification_id=notif_id).first()
         if existing:
             return existing
 
         # Generate a slug
-        slug = re.sub(r'[^a-z0-9]+', '-', notif.title.lower()).strip('-')
+        slug = re.sub(r"[^a-z0-9]+", "-", notif.title.lower()).strip("-")
         # Ensure slug uniqueness by appending id
         slug = f"{slug}-{notif.id}"
 
         # If API key is available, call Gemini API
         if api_key:
             try:
-                content = AIEngine._call_gemini_api(notif.title, notif.body, org.name, api_key)
+                content = AIEngine._call_gemini_api(
+                    notif.title, notif.body, org.name, api_key
+                )
                 if content:
                     gen_content = GeneratedContent(
                         notification_id=notif.id,
-                        article=content.get('article'),
-                        meta_title=content.get('meta_title'),
-                        meta_description=content.get('meta_description'),
+                        article=content.get("article"),
+                        meta_title=content.get("meta_title"),
+                        meta_description=content.get("meta_description"),
                         seo_url=slug,
-                        social_caption=content.get('social_caption'),
-                        whatsapp_message=content.get('whatsapp_message'),
-                        telegram_message=content.get('telegram_message'),
-                        push_notification=content.get('push_notification')
+                        social_caption=content.get("social_caption"),
+                        whatsapp_message=content.get("whatsapp_message"),
+                        telegram_message=content.get("telegram_message"),
+                        push_notification=content.get("push_notification"),
                     )
                     db.session.add(gen_content)
                     db.session.commit()
                     return gen_content
             except Exception as e:
-                print(f"Gemini API call failed, falling back to programmatic template: {e}")
+                print(
+                    f"Gemini API call failed, falling back to programmatic template: {e}"
+                )
 
         # Fallback Programmatic Generation
         article_body = f"""
@@ -144,17 +165,19 @@ To apply for the programs, candidates must fulfill the following:
 
 For more real-time education updates and exam analysis, stay tuned to FormsADDA.
 """
-        
+
         meta_title = f"{notif.title} - Eligibility, Apply Online & Dates | FormsADDA"
         meta_desc = f"Looking for information on {notif.title}? Get the complete details regarding eligibility, registration deadlines, exam dates, fee structures, and application links."
-        
+
         social_caption = f"🚀 Big Update! {notif.title} is now active. Check eligibility criteria, registration deadlines, and how to apply. Full article on FormsADDA. #EducationNews #{org.name.replace(' ', '').replace('-', '').replace(',', '')}"
-        
+
         whatsapp_msg = f"*📢 FormsADDA Admission Alert*\n\n*{notif.title}*\n\n🗓️ Last Date: {notif.application_end_date or 'TBA'}\n📝 Exam Date: {notif.exam_date or 'TBA'}\n\n👉 Click here to check eligibility, fee structure & apply online:\nhttps://formsadda.com/notifications/{slug}"
-        
+
         telegram_msg = f"📢 *FormsADDA Education Update*\n\n🚨 *{notif.title}*\n\n📌 *Key Highlights:*\n• Start Date: {notif.application_start_date or 'TBA'}\n• Last Date: {notif.application_end_date or 'TBA'}\n• Exam Date: {notif.exam_date or 'TBA'}\n\n🔗 Read the full post for direct links & step-by-step apply guide:\nhttps://formsadda.com/notifications/{slug}"
-        
-        push_notification = f"{notif.title} is started! Check dates, fees, and apply direct link."
+
+        push_notification = (
+            f"{notif.title} is started! Check dates, fees, and apply direct link."
+        )
 
         gen_content = GeneratedContent(
             notification_id=notif.id,
@@ -165,12 +188,12 @@ For more real-time education updates and exam analysis, stay tuned to FormsADDA.
             social_caption=social_caption,
             whatsapp_message=whatsapp_msg,
             telegram_message=telegram_msg,
-            push_notification=push_notification
+            push_notification=push_notification,
         )
-        
+
         db.session.add(gen_content)
         db.session.commit()
-        
+
         print(f"AI Content generated successfully for notification ID {notif.id}.")
         return gen_content
 
@@ -200,25 +223,19 @@ Provide a JSON object containing these keys:
 Your output must be ONLY the JSON object, with no markdown code blocks (e.g. do not wrap in ```json).
 """
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
-        payload = {
-            "contents": [{
-                "parts": [{
-                    "text": prompt
-                }]
-            }]
-        }
-        
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
+
         req = urllib.request.Request(
             url,
-            data=json.dumps(payload).encode('utf-8'),
-            headers={'Content-Type': 'application/json'},
-            method='POST'
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
         )
-        
+
         try:
             with urllib.request.urlopen(req, timeout=15) as response:
-                res_data = json.loads(response.read().decode('utf-8'))
-                text_response = res_data['candidates'][0]['content']['parts'][0]['text']
+                res_data = json.loads(response.read().decode("utf-8"))
+                text_response = res_data["candidates"][0]["content"]["parts"][0]["text"]
                 # Clean up any potential markdown wraps
                 text_response = text_response.strip()
                 if text_response.startswith("```json"):
@@ -226,7 +243,7 @@ Your output must be ONLY the JSON object, with no markdown code blocks (e.g. do 
                 if text_response.endswith("```"):
                     text_response = text_response[:-3]
                 text_response = text_response.strip()
-                
+
                 return json.loads(text_response)
         except urllib.error.URLError as ue:
             raise Exception(f"Network error calling Gemini API: {ue}")

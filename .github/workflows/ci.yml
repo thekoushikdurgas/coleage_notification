@@ -1,0 +1,50 @@
+name: Python CI
+
+on:
+  push:
+    branches: [main, develop, "feature/**"]
+    paths:
+      - "app/**"
+      - "scripts/**"
+      - "requirements.txt"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "app/**"
+      - "scripts/**"
+      - "requirements.txt"
+
+jobs:
+  quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff black mypy
+
+      - name: Lint with Ruff
+        run: ruff check app/ scripts/ --ignore E501
+        continue-on-error: true
+
+      - name: Format Check with Black
+        run: black --check app/ scripts/
+        continue-on-error: true
+
+      - name: Type Check with Mypy
+        run: mypy app/ --ignore-missing-imports
+        continue-on-error: true

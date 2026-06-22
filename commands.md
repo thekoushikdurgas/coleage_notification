@@ -1,7 +1,5 @@
 venv\Scripts\python.exe run.py
 
-
-
 python run.py
 
 pip install -r requirements.txt
@@ -55,10 +53,7 @@ docker compose down -v
 
 docker compose build web && docker compose up web
 
-
-ssh -i "contact360app.pem" ubuntu@ec2-54-80-73-219.compute-1.amazonaws.com
-
-
+ssh -i "contact360app.pem" <ubuntu@ec2-54-80-73-219.compute-1.amazonaws.com>
 
 cd coleage_notification
 
@@ -72,11 +67,11 @@ git add .
 git commit -m "coleage_notification deployment v1"
 git push -u origin main
 
-
+chmod +x scripts/setup_ec2.sh
+./scripts/setup_ec2.sh
 
 chmod +x scripts/setup_ec2.sh
 ./scripts/setup_ec2.sh
 
-
-chmod +x scripts/setup_ec2.sh
-./scripts/setup_ec2.sh
+chmod +x scripts/update.sh
+./scripts/update.sh

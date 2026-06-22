@@ -1,5 +1,5 @@
 FormsADDA - Python modules under app\ and scripts\
-Generated: Mon 06/22/2026 15:08:34.10
+Generated: Mon 06/22/2026 16:19:51.79
 
 === app ===
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\ai_engine.py
@@ -7,6 +7,7 @@ E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\config.py
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\database.py
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\routes.py
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\scraper.py
+E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\scrape_defaults.py
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\workers.py
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\__init__.py
 

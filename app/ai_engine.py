@@ -1,4 +1,3 @@
-import os
 import json
 import urllib.request
 import urllib.error
@@ -81,10 +80,11 @@ class AIEngine:
         print(f"AI Extraction complete for ID {notif.id}.")
 
     @staticmethod
-    def generate_content(notif_id, api_key=None):
+    def generate_content(notif_id, api_key=None, ai_provider=None,
+                         ollama_host=None, ollama_model=None):
         """
         Generates SEO articles, meta tags, social media captions, and push templates.
-        Integrates with Gemini API if api_key is provided; falls back to programmatic templates.
+        Routes to Gemini, Ollama, or programmatic templates based on ai_provider.
         """
         notif = Notification.query.get(notif_id)
         if not notif:
@@ -103,8 +103,12 @@ class AIEngine:
         # Ensure slug uniqueness by appending id
         slug = f"{slug}-{notif.id}"
 
-        # If API key is available, call Gemini API
-        if api_key:
+        # Determine provider (backwards-compatible: if ai_provider not given, check api_key)
+        if ai_provider is None:
+            ai_provider = "gemini" if api_key else "none"
+
+        # ── Try Gemini ──────────────────────────────────────────────────────
+        if ai_provider == "gemini" and api_key:
             try:
                 content = AIEngine._call_gemini_api(
                     notif.title, notif.body, org.name, api_key
@@ -127,6 +131,32 @@ class AIEngine:
             except Exception as e:
                 print(
                     f"Gemini API call failed, falling back to programmatic template: {e}"
+                )
+
+        # ── Try Ollama ──────────────────────────────────────────────────────
+        if ai_provider == "ollama" and ollama_host and ollama_model:
+            try:
+                content = AIEngine._call_ollama_api(
+                    notif.title, notif.body, org.name, ollama_host, ollama_model
+                )
+                if content:
+                    gen_content = GeneratedContent(
+                        notification_id=notif.id,
+                        article=content.get("article"),
+                        meta_title=content.get("meta_title"),
+                        meta_description=content.get("meta_description"),
+                        seo_url=slug,
+                        social_caption=content.get("social_caption"),
+                        whatsapp_message=content.get("whatsapp_message"),
+                        telegram_message=content.get("telegram_message"),
+                        push_notification=content.get("push_notification"),
+                    )
+                    db.session.add(gen_content)
+                    db.session.commit()
+                    return gen_content
+            except Exception as e:
+                print(
+                    f"Ollama API call failed, falling back to programmatic template: {e}"
                 )
 
         # Fallback Programmatic Generation
@@ -249,3 +279,111 @@ Your output must be ONLY the JSON object, with no markdown code blocks (e.g. do 
             raise Exception(f"Network error calling Gemini API: {ue}")
         except Exception as e:
             raise Exception(f"Failed to parse Gemini response: {e}")
+
+    @staticmethod
+    def _call_ollama_api(title, body, org_name, host, model):
+        """
+        Invokes a local Ollama model to generate structured content in JSON.
+        Uses the /api/generate endpoint.
+        """
+        prompt = f"""
+You are an expert education content writer and SEO manager for FormsADDA.
+Generate high-quality structured content based on the following education notification.
+
+Organization: {org_name}
+Title: {title}
+Original Details: {body}
+
+Provide a JSON object containing these keys:
+1. 'article': A comprehensive 500+ word markdown article describing the announcement, including sections for Introduction, Key Dates, Eligibility, Fees & Seat Matrix, and Application Process.
+2. 'meta_title': A compelling SEO title less than 60 characters.
+3. 'meta_description': A brief search engine snippet less than 160 characters.
+4. 'social_caption': An engaging caption for Instagram/Twitter with appropriate emojis and hashtags.
+5. 'whatsapp_message': A short messaging alert utilizing bold formatting.
+6. 'telegram_message': A structured announcement using bullet points.
+7. 'push_notification': A single sentence alert (less than 80 chars) for push notifications.
+
+Your output must be ONLY the JSON object, with no markdown code blocks.
+"""
+        url = f"{host.rstrip('/')}/api/generate"
+        payload = {
+            "model": model,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json",
+        }
+
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=120) as response:
+                res_data = json.loads(response.read().decode("utf-8"))
+                text_response = res_data.get("response", "")
+                # Clean up any potential markdown wraps
+                text_response = text_response.strip()
+                if text_response.startswith("```json"):
+                    text_response = text_response[7:]
+                if text_response.startswith("```"):
+                    text_response = text_response[3:]
+                if text_response.endswith("```"):
+                    text_response = text_response[:-3]
+                text_response = text_response.strip()
+                return json.loads(text_response)
+        except urllib.error.URLError as ue:
+            raise Exception(f"Network error calling Ollama API: {ue}")
+        except Exception as e:
+            raise Exception(f"Failed to parse Ollama response: {e}")
+
+    @staticmethod
+    def test_ollama_connection(host):
+        """
+        Tests connectivity to an Ollama instance and returns available models.
+        Calls GET /api/tags.
+        """
+        url = f"{host.rstrip('/')}/api/tags"
+        req = urllib.request.Request(url, method="GET")
+        try:
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode("utf-8"))
+                models = [m.get("name", "") for m in data.get("models", [])]
+                return {"success": True, "models": models}
+        except urllib.error.URLError as ue:
+            return {"success": False, "error": f"Cannot reach Ollama at {host}: {ue}"}
+        except Exception as e:
+            return {"success": False, "error": f"Unexpected error: {e}"}
+
+    @staticmethod
+    def test_gemini_connection(api_key):
+        """
+        Tests a Gemini API key by sending a minimal request.
+        """
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models"
+            f"/gemini-2.5-flash:generateContent?key={api_key}"
+        )
+        payload = {"contents": [{"parts": [{"text": "Say hello in one word."}]}]}
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=15) as response:
+                data = json.loads(response.read().decode("utf-8"))
+                if "candidates" in data:
+                    return {"success": True, "message": "API key is valid. Gemini is responding."}
+                return {"success": False, "error": "Unexpected response structure."}
+        except urllib.error.HTTPError as he:
+            if he.code == 400:
+                return {"success": False, "error": "Invalid API key or bad request."}
+            return {"success": False, "error": f"HTTP {he.code}: {he.reason}"}
+        except urllib.error.URLError as ue:
+            return {"success": False, "error": f"Network error: {ue}"}
+        except Exception as e:
+            return {"success": False, "error": f"Unexpected error: {e}"}

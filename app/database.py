@@ -25,7 +25,7 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.close()
 
 
-class Organization(db.Model):  # type: ignore[misc]
+class Organization(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "organizations"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -74,7 +74,7 @@ class Organization(db.Model):  # type: ignore[misc]
         }
 
 
-class Notification(db.Model):  # type: ignore[misc]
+class Notification(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "notifications"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -137,7 +137,7 @@ class Notification(db.Model):  # type: ignore[misc]
     )
 
 
-class GeneratedContent(db.Model):  # type: ignore[misc]
+class GeneratedContent(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "generated_contents"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -159,7 +159,7 @@ class GeneratedContent(db.Model):  # type: ignore[misc]
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
-class Subscription(db.Model):  # type: ignore[misc]
+class Subscription(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "subscriptions"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -177,8 +177,12 @@ class Subscription(db.Model):  # type: ignore[misc]
     channels = db.Column(db.String(100), nullable=False, default="email")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # External Database Push Configuration
+    push_db_type = db.Column(db.String(50), nullable=True)  # 'postgres', 'elasticsearch', 'opensearch'
+    push_db_config = db.Column(db.Text, nullable=True)      # JSON string containing connection host, credentials, etc.
 
-class CrawlerLog(db.Model):  # type: ignore[misc]
+
+class CrawlerLog(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "crawler_logs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -200,7 +204,7 @@ class CrawlerLog(db.Model):  # type: ignore[misc]
     crawled_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 
-class DeliveryLog(db.Model):  # type: ignore[misc]
+class DeliveryLog(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "delivery_logs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -215,7 +219,7 @@ class DeliveryLog(db.Model):  # type: ignore[misc]
     sent_at = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 
-class ScheduledTask(db.Model):  # type: ignore[misc]
+class ScheduledTask(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "scheduled_tasks"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -244,7 +248,7 @@ class ScheduledTask(db.Model):  # type: ignore[misc]
     )
 
 
-class ScheduledTaskRun(db.Model):  # type: ignore[misc]
+class ScheduledTaskRun(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "scheduled_task_runs"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -267,9 +271,82 @@ class ScheduledTaskRun(db.Model):  # type: ignore[misc]
     error_message = db.Column(db.Text, nullable=True)
 
 
-class SystemSetting(db.Model):  # type: ignore[misc]
+class SystemSetting(db.Model):  # type: ignore[name-defined, misc]
     __tablename__ = "system_settings"
 
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(100), unique=True, nullable=False, index=True)
     value = db.Column(db.String(255), nullable=False)
+
+
+class CollegeScrapeConfig(db.Model):  # type: ignore[name-defined, misc]
+    """
+    Stores per-college CSS selector configurations for real web scraping.
+
+    selector_health values:
+      - "ok"       : Selectors are working correctly
+      - "degraded" : LLM had to recover selectors recently
+      - "lost"     : Neither stored selectors nor LLM found notifications
+                     Admin must be alerted.
+
+    notification_selectors is a JSON string storing a list of selector configs:
+      [
+        {
+          "css": ".notification-list li",
+          "title_attr": "text",
+          "link_attr": "a",
+          "context": "Main notice board"
+        },
+        ...
+      ]
+    """
+
+    __tablename__ = "college_scrape_configs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    organization_id = db.Column(
+        db.Integer,
+        db.ForeignKey("organizations.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
+    )
+
+    # JSON-serialized list of selector dicts
+    notification_selectors = db.Column(db.Text, nullable=True)
+
+    # The single selector string that last successfully extracted data
+    last_successful_selector = db.Column(db.String(500), nullable=True)
+
+    # Timestamps
+    last_scraped_at = db.Column(db.DateTime, nullable=True)
+    llm_recovered_at = db.Column(db.DateTime, nullable=True)
+
+    # Health: "ok" | "degraded" | "lost"
+    selector_health = db.Column(db.String(20), default="ok", nullable=False)
+
+    # Prevent repeated admin alerts for the same lost selector state
+    admin_alerted = db.Column(db.Boolean, default=False)
+
+    # Relationship
+    organization = db.relationship(
+        "Organization",
+        backref=db.backref(
+            "scrape_config", uselist=False, cascade="all, delete-orphan"
+        ),
+    )
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "organization_id": self.organization_id,
+            "last_successful_selector": self.last_successful_selector,
+            "last_scraped_at": (
+                self.last_scraped_at.isoformat() if self.last_scraped_at else None
+            ),
+            "llm_recovered_at": (
+                self.llm_recovered_at.isoformat() if self.llm_recovered_at else None
+            ),
+            "selector_health": self.selector_health,
+            "admin_alerted": self.admin_alerted,
+        }

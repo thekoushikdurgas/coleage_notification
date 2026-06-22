@@ -17,5 +17,13 @@ class Config:
     # API key for real LLM integration if provided (otherwise mock will be used)
     GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
+    # AI Provider selection: 'gemini', 'ollama', or 'none'
+    AI_PROVIDER = os.environ.get("AI_PROVIDER", "gemini")
+
+    # Ollama (local AI) configuration
+    OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+    OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "gemma2")
+
     # Path to Excel input
     EXCEL_FILE_PATH = os.path.join(BASE_DIR, "inputs", "College-ALL COLLEGE.xlsx")
+

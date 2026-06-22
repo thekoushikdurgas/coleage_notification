@@ -144,8 +144,82 @@
                                 <span class="channel-desc mt-1">Fallback flash carrier messages</span>
                             </label>
                         </div>
+                        <!-- Database Push Card -->
+                        <div class="col-xl col-md-4 col-sm-6 mb-3 px-2">
+                            <label class="channel-card w-100 h-100 mb-0" id="card_ch_db_push" onclick="updatePreviewMockup('db_push')">
+                                <input type="checkbox" name="channels" id="ch_db_push" value="db_push" onchange="toggleChannelCard('db_push', this)">
+                                <div class="channel-check-mark" aria-hidden="true"></div>
+                                <i class="fa fa-database channel-icon text-danger mt-2" aria-hidden="true"></i>
+                                <span class="channel-label mt-1">Database Push</span>
+                                <span class="channel-desc mt-1">Push payload directly to external DB</span>
+                            </label>
+                        </div>
                     </div>
                     </fieldset>
+                    
+                    <!-- Database Push Settings (Collapsible) -->
+                    <div id="db-push-settings-panel" class="border rounded p-4 mb-4 bg-light" style="display: none; border-radius: 12px !important; border-color: #dcdfe6 !important;">
+                        <h5 class="text-black font-weight-bold mb-3 d-flex align-items-center" style="font-size: 15px; font-family:'Outfit', sans-serif;">
+                            <i class="fa fa-cogs text-danger mr-2"></i> Database Push Settings
+                        </h5>
+                        <p class="text-muted mb-3" style="font-size: 11.5px; margin-top:-8px;">Specify the connection parameters for the external destination database.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label for="push_db_type" class="text-black font-weight-bold" style="font-size: 13px;">Database Type</label>
+                                <select id="push_db_type" name="push_db_type" class="form-control" onchange="adjustDbFields()">
+                                    <option value="postgres">PostgreSQL</option>
+                                    <option value="elasticsearch">Elasticsearch</option>
+                                    <option value="opensearch">OpenSearch</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5 form-group">
+                                <label for="push_db_host" class="text-black font-weight-bold" style="font-size: 13px;">Host / IP Address</label>
+                                <input type="text" id="push_db_host" name="push_db_host" class="form-control" placeholder="e.g. localhost or 192.168.1.100">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label for="push_db_port" class="text-black font-weight-bold" style="font-size: 13px;">Port</label>
+                                <input type="number" id="push_db_port" name="push_db_port" class="form-control" placeholder="5432">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label for="push_db_name" class="text-black font-weight-bold" style="font-size: 13px;" id="lbl_db_name">Database Name</label>
+                                <input type="text" id="push_db_name" name="push_db_name" class="form-control" placeholder="e.g. formsadda_db">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="push_db_table_or_index" class="text-black font-weight-bold" style="font-size: 13px;" id="lbl_table_or_index">Table Name</label>
+                                <input type="text" id="push_db_table_or_index" name="push_db_table_or_index" class="form-control" placeholder="notifications">
+                            </div>
+                            <div class="col-md-4 form-group">
+                                <label for="push_db_ssl_mode" class="text-black font-weight-bold" style="font-size: 13px;">SSL Mode / Security</label>
+                                <select id="push_db_ssl_mode" name="push_db_ssl_mode" class="form-control">
+                                    <option value="disable">Disabled (Plain Text)</option>
+                                    <option value="require">Required (SSL/TLS)</option>
+                                    <option value="verify-full">Verify Certificates (Strict)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label for="push_db_user" class="text-black font-weight-bold" style="font-size: 13px;">Username</label>
+                                <input type="text" id="push_db_user" name="push_db_user" class="form-control" placeholder="optional">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label for="push_db_password" class="text-black font-weight-bold" style="font-size: 13px;">Password</label>
+                                <input type="password" id="push_db_password" name="push_db_password" class="form-control" placeholder="optional">
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
+                            <button type="button" class="btn btn-warning btn-sm" id="btn-test-db-conn" onclick="testDbConnection()" style="border-radius:8px; font-weight:600;">
+                                <i class="fa fa-plug mr-1"></i> Test Connection
+                            </button>
+                            <div id="db-conn-test-result" style="font-size: 12px; font-weight: 500;"></div>
+                        </div>
+                    </div>
                     
                     <!-- Live Preview Section -->
                     <div class="border-top pt-4 mt-4 mb-4">
@@ -183,6 +257,96 @@
                 card.classList.remove('selected');
             }
         }
+
+        if (channel === 'db_push') {
+            const panel = document.getElementById('db-push-settings-panel');
+            const inputs = ['push_db_host', 'push_db_port', 'push_db_name'];
+            if (checkbox.checked) {
+                panel.style.display = 'block';
+                inputs.forEach(id => {
+                    document.getElementById(id).setAttribute('required', 'required');
+                });
+                adjustDbFields();
+            } else {
+                panel.style.display = 'none';
+                inputs.forEach(id => {
+                    document.getElementById(id).removeAttribute('required');
+                });
+            }
+        }
+    }
+
+    function adjustDbFields() {
+        const dbType = document.getElementById('push_db_type').value;
+        const portInput = document.getElementById('push_db_port');
+        const dbNameLabel = document.getElementById('lbl_db_name');
+        const tableLabel = document.getElementById('lbl_table_or_index');
+        
+        if (dbType === 'postgres') {
+            portInput.placeholder = '5432';
+            if (!portInput.value || portInput.value === '9200') portInput.value = '5432';
+            dbNameLabel.textContent = 'Database Name';
+            tableLabel.textContent = 'Table Name';
+        } else {
+            portInput.placeholder = '9200';
+            if (!portInput.value || portInput.value === '5432') portInput.value = '9200';
+            dbNameLabel.textContent = 'Index Name';
+            tableLabel.textContent = 'Document Type';
+        }
+    }
+
+    function testDbConnection() {
+        const btn = document.getElementById('btn-test-db-conn');
+        const resultDiv = document.getElementById('db-conn-test-result');
+        
+        const dbType = document.getElementById('push_db_type').value;
+        const host = document.getElementById('push_db_host').value;
+        const port = document.getElementById('push_db_port').value;
+        const database = document.getElementById('push_db_name').value;
+        const user = document.getElementById('push_db_user').value;
+        const password = document.getElementById('push_db_password').value;
+        const tableOrIndex = document.getElementById('push_db_table_or_index').value;
+        const sslMode = document.getElementById('push_db_ssl_mode').value;
+        
+        if (!host || !port || !database) {
+            resultDiv.innerHTML = '<span class="text-danger"><i class="fa fa-exclamation-triangle"></i> Host, Port, and Database/Index Name are required to test!</span>';
+            return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> Testing...';
+        resultDiv.innerHTML = '<span class="text-muted">Connecting to external database...</span>';
+        
+        const formData = new FormData();
+        formData.append('db_type', dbType);
+        formData.append('host', host);
+        formData.append('port', port);
+        formData.append('database', database);
+        formData.append('user', user);
+        formData.append('password', password);
+        formData.append('table_or_index', tableOrIndex);
+        formData.append('ssl_mode', sslMode);
+        
+        fetch('/test-db-connection', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-plug mr-1"></i> Test Connection';
+            if (data.success) {
+                resultDiv.innerHTML = `<span class="text-success"><i class="fa fa-check-circle"></i> ${data.message}</span>`;
+            } else {
+                resultDiv.innerHTML = `<span class="text-danger" title="${data.message}"><i class="fa fa-times-circle"></i> Connection failed. Hover/Click for details.</span>`;
+                alert("Connection failed:\n" + data.message);
+            }
+        })
+        .catch(err => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-plug mr-1"></i> Test Connection';
+            resultDiv.innerHTML = `<span class="text-danger"><i class="fa fa-times-circle"></i> Error calling test API: ${err}</span>`;
+        });
     }
 
     function updatePreviewMockup(channel) {
@@ -268,6 +432,25 @@
                             </div>
                             <div style="position:absolute; bottom:10px; left:0; right:0; text-align:center; color:rgba(255,255,255,0.4); font-size:8px;"><i class="fa fa-chevron-right"></i> Slide to read</div>
                         </div>
+                    </div>
+                </div>
+            `;
+        } else if (channel === 'db_push') {
+            html = `
+                <div class="db-push-mockup" style="width: 320px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); background:#1e1e1e; border-radius:8px; border:1px solid #333; color:#a9b7c6; font-family:'Courier New', monospace; overflow:hidden; text-align: left;">
+                    <div class="db-header" style="padding: 6px 12px; background:#2d2d2d; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:11px; font-weight:700; color:#fff;"><i class="fa fa-database text-warning mr-1"></i> External Database Connection</span>
+                        <span style="font-size:9px; padding: 1px 4px; border-radius:3px; background:#28a745; color:#fff;">OK</span>
+                    </div>
+                    <div class="db-body" style="padding: 10px; font-size:10px; line-height:1.4;">
+                        <div style="color:#6a8759;">// Pushing JSON notification payload...</div>
+                        <pre style="color:#a9b7c6; margin:0; background:transparent; border:none; padding:0; font-family: inherit; font-size: inherit; white-space: pre-wrap;">{
+  "title": "${sampleTitle}",
+  "category": "admission",
+  "organization": "${sampleOrg}",
+  "pushed_at": "2026-06-22T16:32:19Z"
+}</pre>
+                        <div style="color:#28a745; margin-top:4px;">✔ Record inserted/indexed successfully!</div>
                     </div>
                 </div>
             `;

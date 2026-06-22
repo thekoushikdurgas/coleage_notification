@@ -1,7 +1,6 @@
 import threading
 import queue
 import time
-import json
 import traceback
 import re
 from datetime import datetime, timedelta
@@ -14,20 +13,29 @@ from app.database import (
     ScheduledTaskRun,
     SystemSetting,
 )
-from app.scraper import ScraperEngine
+from app.scraper import (
+    ScraperEngine,
+    RealScraperEngine,
+    SelectorLostError,
+    FetchError,
+    SCRAPING_AVAILABLE,
+)
 from app.ai_engine import AIEngine
+from app.settings_helper import get_setting
 from typing import Tuple, Optional
 
 # Queues with type annotations
-scrape_queue: queue.Queue[Tuple[int, Optional[int], Optional[int]]] = queue.Queue()
-scraped_queue: queue.Queue[Tuple[int, Optional[int], Optional[int], dict]] = queue.Queue()
+scrape_queue: "queue.Queue[Tuple[int, Optional[int], Optional[int]]]" = queue.Queue()  # type: ignore[var-annotated]
+scraped_queue: "queue.Queue[Tuple[int, Optional[int], Optional[int], dict]]" = (
+    queue.Queue()
+)  # type: ignore[var-annotated]
 
 # Status Tracking
 scraper_status = {"status": "Idle", "target": ""}
 loader_status = {"status": "Idle", "target": ""}
 
 # SSE Client Listeners
-sse_listeners: list[queue.Queue] = []
+sse_listeners: list[queue.Queue] = []  # type: ignore[var-annotated]
 listeners_lock = threading.Lock()
 
 
@@ -187,9 +195,11 @@ def check_run_completion(run_id):
             # --- Dynamic Schedule Scaling (Backoff / Restoral) ---
             task = run.scheduled_task
             if task and run.targets_count > 0:
-                non_dup_count = Notification.query.filter_by(
-                    run_id=run_id
-                ).filter(~Notification.is_duplicate).count()
+                non_dup_count = (
+                    Notification.query.filter_by(run_id=run_id)
+                    .filter(~Notification.is_duplicate)
+                    .count()
+                )
                 if non_dup_count == 0:
                     # All websites had no update or were duplicates! Double the frequency interval.
                     original_freq = task.frequency
@@ -273,36 +283,144 @@ class ScraperWorker(threading.Thread):
             scraper_status["target"] = org_name
             broadcast_status()
 
-            log_to_workers(
-                f"Starting simulated scrape for college: {org_name}", "system"
-            )
+            # Decide mode: real scraping vs legacy simulation
+            with self.app.app_context():
+                _org = Organization.query.get(org_id)
+                has_website = bool(_org and _org.website)
+
+            use_real_scraper = SCRAPING_AVAILABLE and has_website
+
+            if use_real_scraper:
+                log_to_workers(f"Starting real web scrape for: {org_name}", "system")
+            else:
+                reason = (
+                    "(no website URL)" if not has_website else "(scraping deps missing)"
+                )
+                log_to_workers(
+                    f"Starting simulated scrape for: {org_name} {reason}", "system"
+                )
 
             try:
-                # Simulate scrape (independent of DB session context)
-                with self.app.app_context():
-                    scraped_data = ScraperEngine.simulate_scrape(org_id)
+                if use_real_scraper:
+                    # ── REAL SCRAPING PATH ─────────────────────────────────
+                    with self.app.app_context():
+                        scraped_items = RealScraperEngine.run_scrape(
+                            org_id, 
+                            api_key=get_setting("gemini_api_key", ""),
+                            ai_provider=get_setting("ai_provider", "none"),
+                            ollama_host=get_setting("ollama_host", "http://localhost:11434"),
+                            ollama_model=get_setting("ollama_model", "gemma2")
+                        )
 
-                if scraped_data:
-                    log_to_workers(
-                        f"Successfully scraped '{scraped_data['title'][:40]}...'. Passing to Loader Worker.",
-                        "success",
-                    )
-                    scraped_queue.put((org_id, task_id, run_id, scraped_data))
+                    if scraped_items:
+                        log_to_workers(
+                            f"Real scrape OK for '{org_name}': {len(scraped_items)} notification(s) found. Queuing for Loader.",
+                            "success",
+                        )
+                        # Queue each notification item individually
+                        for item in scraped_items:
+                            scraped_queue.put((org_id, task_id, run_id, item))
+                    else:
+                        log_to_workers(
+                            f"Real scrape completed for '{org_name}'. No new notices on page.",
+                            "info",
+                        )
+                        with self.app.app_context():
+                            save_and_broadcast_crawler_log(
+                                org_id=org_id,
+                                status="success",
+                                detected_changes=False,
+                                task_id=task_id,
+                                run_id=run_id,
+                            )
+                            if run_id:
+                                check_run_completion(run_id)
+
                 else:
+                    # ── LEGACY SIMULATION PATH ────────────────────────────
+                    with self.app.app_context():
+                        scraped_data = ScraperEngine.simulate_scrape(org_id)
+
+                    if scraped_data:
+                        log_to_workers(
+                            f"Simulated: '{scraped_data['title'][:40]}...'. Passing to Loader Worker.",
+                            "success",
+                        )
+                        scraped_queue.put((org_id, task_id, run_id, scraped_data))
+                    else:
+                        log_to_workers(
+                            f"Simulation completed for '{org_name}'. No new notices.",
+                            "info",
+                        )
+                        with self.app.app_context():
+                            save_and_broadcast_crawler_log(
+                                org_id=org_id,
+                                status="success",
+                                detected_changes=False,
+                                task_id=task_id,
+                                run_id=run_id,
+                            )
+                            if run_id:
+                                check_run_completion(run_id)
+
+            except SelectorLostError as sle:
+                # ── SELECTOR LOST: Selectors & LLM both failed ─────────────
+                log_to_workers(
+                    f"⚠ SELECTOR LOST for '{org_name}': {str(sle)} — Admin alert required!",
+                    "error",
+                )
+                with self.app.app_context():
+                    save_and_broadcast_crawler_log(
+                        org_id=org_id,
+                        status="selector_lost",
+                        detected_changes=False,
+                        error_message=str(sle),
+                        task_id=task_id,
+                        run_id=run_id,
+                    )
+                    if run_id:
+                        check_run_completion(run_id)
+
+            except FetchError as fe:
+                # ── FETCH ERROR: Website unreachable ───────────────────────
+                log_to_workers(
+                    f"Fetch error for '{org_name}': {str(fe)} — falling back to simulation.",
+                    "warning",
+                )
+                # Graceful fallback to legacy simulation on fetch failure
+                try:
+                    with self.app.app_context():
+                        scraped_data = ScraperEngine.simulate_scrape(org_id)
+                    if scraped_data:
+                        scraped_queue.put((org_id, task_id, run_id, scraped_data))
+                    else:
+                        with self.app.app_context():
+                            save_and_broadcast_crawler_log(
+                                org_id=org_id,
+                                status="success",
+                                detected_changes=False,
+                                error_message=f"Fetch failed, simulation also empty: {fe}",
+                                task_id=task_id,
+                                run_id=run_id,
+                            )
+                            if run_id:
+                                check_run_completion(run_id)
+                except Exception as fallback_err:
                     log_to_workers(
-                        f"Crawl completed for '{org_name}'. No new notices found.",
-                        "info",
+                        f"Fallback simulation also failed for '{org_name}': {fallback_err}",
+                        "error",
                     )
                     with self.app.app_context():
                         save_and_broadcast_crawler_log(
                             org_id=org_id,
-                            status="success",
-                            detected_changes=False,
+                            status="failed",
+                            error_message=str(fallback_err),
                             task_id=task_id,
                             run_id=run_id,
                         )
                         if run_id:
                             check_run_completion(run_id)
+
             except Exception as e:
                 log_to_workers(f"Scraper error for '{org_name}': {str(e)}", "error")
                 traceback.print_exc()
@@ -398,7 +516,7 @@ class LoaderWorker(threading.Thread):
 
                         if existing:
                             log_to_workers(
-                                f"Notice already exists in database. Skipping duplicate save.",
+                                "Notice already exists in database. Skipping duplicate save.",
                                 "info",
                             )
                             log = CrawlerLog(
@@ -443,14 +561,21 @@ class LoaderWorker(threading.Thread):
                                 task_id=task_id,
                                 run_id=run_id,
                             )
+
                             db.session.add(new_notif)
                             db.session.flush()  # Populate ID
 
                             # D. AI extraction and content generation ONLY IF NOT duplicate
                             if not is_dup:
                                 AIEngine.extract_dates_and_details(new_notif.id)
-                                api_key = self.app.config.get("GEMINI_API_KEY")
-                                AIEngine.generate_content(new_notif.id, api_key=api_key)
+                                if get_setting("content_generation_enabled", "true") == "true":
+                                    AIEngine.generate_content(
+                                        new_notif.id, 
+                                        api_key=get_setting("gemini_api_key", ""),
+                                        ai_provider=get_setting("ai_provider", "none"),
+                                        ollama_host=get_setting("ollama_host", "http://localhost:11434"),
+                                        ollama_model=get_setting("ollama_model", "gemma2")
+                                    )
 
                                 # If auto-approved, dispatch alerts
                                 alerts_sent = 0
@@ -594,10 +719,14 @@ class LoaderWorker(threading.Thread):
 
                                 if not is_dup:
                                     AIEngine.extract_dates_and_details(new_notif.id)
-                                    api_key = self.app.config.get("GEMINI_API_KEY")
-                                    AIEngine.generate_content(
-                                        new_notif.id, api_key=api_key
-                                    )
+                                    if get_setting("content_generation_enabled", "true") == "true":
+                                        AIEngine.generate_content(
+                                            new_notif.id, 
+                                            api_key=get_setting("gemini_api_key", ""),
+                                            ai_provider=get_setting("ai_provider", "none"),
+                                            ollama_host=get_setting("ollama_host", "http://localhost:11434"),
+                                            ollama_model=get_setting("ollama_model", "gemma2")
+                                        )
 
                                     if auto_approve:
                                         from app.routes import dispatch_alerts

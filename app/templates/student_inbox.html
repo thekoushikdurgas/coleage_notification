@@ -43,6 +43,7 @@
                                         {% elif msg.channel == 'telegram' %}badge-info
                                         {% elif msg.channel == 'email' %}badge-primary
                                         {% elif msg.channel == 'push' %}badge-warning
+                                        {% elif msg.channel == 'db_push' %}badge-danger
                                         {% else %}badge-secondary
                                         {% endif %}">
                                         {{ msg.channel|upper }}
@@ -110,6 +111,14 @@
                                 aria-selected="false" aria-controls="mockup-viewport"
                                 style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
                             <i class="fa fa-commenting mr-1 text-secondary" aria-hidden="true"></i> SMS
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-db_push" role="tab" type="button"
+                                onclick="switchMockupChannel('db_push')"
+                                aria-selected="false" aria-controls="mockup-viewport"
+                                style="font-weight:600; font-size:12px; padding: 8px 12px; background:none; border:none; cursor:pointer;">
+                            <i class="fa fa-database mr-1 text-danger" aria-hidden="true"></i> DB Push
                         </button>
                     </li>
                 </ul>
@@ -298,6 +307,29 @@
                 </div>
             `;
             viewport.innerHTML = html;
+        } else if (activeChannel === 'db_push') {
+            html = `
+                <div class="db-push-mockup" style="width: 100%; box-shadow: 0 4px 16px rgba(0,0,0,0.08); background:#1e1e1e; border-radius:8px; border:1px solid #333; color:#a9b7c6; font-family:'Courier New', monospace; overflow:hidden;">
+                    <div class="db-header" style="padding: 8px 14px; background:#2d2d2d; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:12px; font-weight:700; color:#fff;"><i class="fa fa-database text-warning mr-1"></i> External Database Push Log</span>
+                        <span style="font-size:10px; padding: 2px 6px; border-radius:4px; background:#28a745; color:#fff;">SUCCESS</span>
+                    </div>
+                    <div class="db-body" style="padding: 14px; font-size:11px; line-height:1.5; max-height: 320px; overflow-y: auto; text-align: left;">
+                        <div style="color:#6a8759;">// Connection details: ${selectedMsg.recipient}</div>
+                        <div style="color:#cc7832; margin-top:6px;">Payload Object:</div>
+                        <pre style="color:#a9b7c6; margin:0; background:transparent; border:none; padding:0; font-family: inherit; font-size: inherit; white-space: pre-wrap;">{
+  "id": ${selectedMsg.id || 104},
+  "title": "${selectedMsg.title}",
+  "category": "${selectedMsg.category || 'admission'}",
+  "organization_name": "${selectedMsg.org_name || 'College Feed'}",
+  "pushed_at": "${selectedMsg.time}"
+}</pre>
+                        <hr style="border-color:#333; margin:8px 0;">
+                        <div style="color:#28a745;">✔ Record inserted/indexed successfully!</div>
+                    </div>
+                </div>
+            `;
+            viewport.innerHTML = html;
         } else {
             // SMS
             html = `
@@ -364,6 +396,7 @@
         else if (msg.channel === 'telegram') badgeClass = 'badge-info';
         else if (msg.channel === 'email') badgeClass = 'badge-primary';
         else if (msg.channel === 'push') badgeClass = 'badge-warning';
+        else if (msg.channel === 'db_push') badgeClass = 'badge-danger';
         
         item.innerHTML = `
             <div class="d-flex justify-content-between align-items-center mb-1">

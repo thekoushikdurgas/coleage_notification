@@ -230,6 +230,12 @@
 					        <span class="nav-text">Crawl Scheduler</span>
 					    </a>
 				    </li>
+                    <li class="{% if request.path.startswith('/admin/settings') %}mm-active{% endif %}" role="listitem">
+                        <a href="{{ url_for('main.admin_settings') }}" class="ai-icon" aria-expanded="{% if request.path.startswith('/admin/settings') %}true{% else %}false{% endif %}" {% if request.path.startswith('/admin/settings') %}aria-current="page"{% endif %}>
+					        <i class="flaticon-381-settings-2" aria-hidden="true"></i>
+					        <span class="nav-text">Settings</span>
+					    </a>
+				    </li>
                     {% endif %}
                     <li class="{% if request.path == '/student-inbox' %}mm-active{% endif %}" role="listitem">
                         <a href="{{ url_for('main.student_inbox') }}" class="ai-icon" aria-expanded="{% if request.path == '/student-inbox' %}true{% else %}false{% endif %}" {% if request.path == '/student-inbox' %}aria-current="page"{% endif %}>

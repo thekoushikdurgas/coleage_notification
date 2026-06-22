@@ -1,3 +1,5 @@
+Microsoft Windows [Version 10.0.26100.8246]
+(c) Microsoft Corporation. All rights reserved.
 
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification>codebase.bat
 
@@ -82,6 +84,8 @@ Requirement already satisfied: pandas==3.0.3 in .\venv\Lib\site-packages (from -
 Requirement already satisfied: openpyxl==3.1.5 in .\venv\Lib\site-packages (from -r requirements.txt (line 4)) (3.1.5)
 Requirement already satisfied: python-dotenv==1.0.1 in .\venv\Lib\site-packages (from -r requirements.txt (line 5)) (1.0.1)
 Requirement already satisfied: psycopg2-binary==2.9.10 in .\venv\Lib\site-packages (from -r requirements.txt (line 7)) (2.9.10)
+Requirement already satisfied: requests==2.32.3 in .\venv\Lib\site-packages (from -r requirements.txt (line 9)) (2.32.3)
+Requirement already satisfied: beautifulsoup4==4.12.3 in .\venv\Lib\site-packages (from -r requirements.txt (line 10)) (4.12.3)
 Requirement already satisfied: Werkzeug>=3.0.0 in .\venv\Lib\site-packages (from Flask==3.0.3->-r requirements.txt (line 1)) (3.1.8)
 Requirement already satisfied: Jinja2>=3.1.2 in .\venv\Lib\site-packages (from Flask==3.0.3->-r requirements.txt (line 1)) (3.1.6)
 Requirement already satisfied: itsdangerous>=2.1.2 in .\venv\Lib\site-packages (from Flask==3.0.3->-r requirements.txt (line 1)) (2.2.0)
@@ -92,6 +96,11 @@ Requirement already satisfied: numpy>=1.26.0 in .\venv\Lib\site-packages (from p
 Requirement already satisfied: python-dateutil>=2.8.2 in .\venv\Lib\site-packages (from pandas==3.0.3->-r requirements.txt (line 3)) (2.9.0.post0)
 Requirement already satisfied: tzdata in .\venv\Lib\site-packages (from pandas==3.0.3->-r requirements.txt (line 3)) (2026.2)
 Requirement already satisfied: et-xmlfile in .\venv\Lib\site-packages (from openpyxl==3.1.5->-r requirements.txt (line 4)) (2.0.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (3.18)
+Requirement already satisfied: urllib3<3,>=1.21.1 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (2.7.0)
+Requirement already satisfied: certifi>=2017.4.17 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (2026.6.17)
+Requirement already satisfied: soupsieve>1.2 in .\venv\Lib\site-packages (from beautifulsoup4==4.12.3->-r requirements.txt (line 10)) (2.8.4)
 Requirement already satisfied: colorama in .\venv\Lib\site-packages (from click>=8.1.3->Flask==3.0.3->-r requirements.txt (line 1)) (0.4.6)
 Requirement already satisfied: MarkupSafe>=2.0 in .\venv\Lib\site-packages (from Jinja2>=3.1.2->Flask==3.0.3->-r requirements.txt (line 1)) (3.0.3)
 Requirement already satisfied: six>=1.5 in .\venv\Lib\site-packages (from python-dateutil>=2.8.2->pandas==3.0.3->-r requirements.txt (line 3)) (1.17.0)
@@ -105,271 +114,68 @@ Requirement already satisfied: typing-extensions>=4.6.0 in .\venv\Lib\site-packa
 
 [3/10] Type checking (mypy)...
 ----------------------------------------
-app\database.py:22: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:71: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:134: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:156: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:175: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:197: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:212: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:241: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:264: error: Name "db.Model" is not defined  [name-defined]
-app\workers.py:21: error: Need type annotation for "scrape_queue"  [var-annotated]
-app\workers.py:22: error: Need type annotation for "scraped_queue"  [var-annotated]
-app\workers.py:29: error: Need type annotation for "sse_listeners" (hint: "sse_listeners: list[<type>] = ...")  [var-annotated]
-Found 12 errors in 2 files (checked 7 source files)
-   mypy detected type check warnings
+Success: no issues found in 8 source files
+  OK mypy type check passed
 
 [4/10] Formatting checks (black)...
 ----------------------------------------
-All done! ✨ 🍰 ✨
-7 files would be left unchanged.
-  OK black formatting check passed
+would reformat E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\database.py
+would reformat E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\scraper.py
+would reformat E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\workers.py
+
+Oh no! 💥 💔 💥
+3 files would be reformatted, 5 files would be left unchanged.
+   black check failed - Run black formatting
 
 [5/10] Linting (ruff)...
 ----------------------------------------
-F401 [*] `os` imported but unused
- --> app\ai_engine.py:1:8
-  |
-1 | import os
-  |        ^^
-2 | import json
-3 | import urllib.request
-  |
-help: Remove unused import: `os`
-
-F401 [*] `flask.current_app` imported but unused
- --> app\routes.py:1:30
-  |
-1 | from flask import Blueprint, current_app, Response
-  |                              ^^^^^^^^^^^
-2 | from flask import render_template, request, redirect, url_for, flash, jsonify
-3 | from app.database import (
-  |
-help: Remove unused import: `flask.current_app`
-
-F401 [*] `app.scraper.ScraperEngine` imported but unused
-  --> app\routes.py:15:25
-   |
-13 |     SystemSetting,
-14 | )
-15 | from app.scraper import ScraperEngine
-   |                         ^^^^^^^^^^^^^
-16 | from app.ai_engine import AIEngine
-17 | from datetime import datetime, timedelta
-   |
-help: Remove unused import: `app.scraper.ScraperEngine`
-
-E712 Avoid equality comparisons to `False`; use `not Notification.is_duplicate:` for false checks
-   --> app\routes.py:160:17
-    |
-158 |             joinedload(Notification.generated_content),
-159 |         )
-160 |         .filter(Notification.is_duplicate == False, Notification.status == "Published")
-    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-161 |     )
-    |
-help: Replace with `not Notification.is_duplicate`
-
-E711 Comparison to `None` should be `cond is not None`
-   --> app\routes.py:192:39
-    |
-190 |     states = (
-191 |         db.session.query(Organization.state)
-192 |         .filter(Organization.state != None)
-    |                                       ^^^^
-193 |         .distinct()
-194 |         .order_by(Organization.state)
-    |
-help: Replace with `cond is not None`
-
-E712 Avoid equality comparisons to `False`; use `not Notification.is_duplicate:` for false checks
-   --> app\routes.py:242:13
-    |
-240 |             Notification.id != notif.id,
-241 |             Notification.status == "Published",
-242 |             Notification.is_duplicate == False,
-    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-243 |             (Notification.category == notif.category)
-244 |             | (Organization.state == org.state),
-    |
-help: Replace with `not Notification.is_duplicate`
-
-E711 Comparison to `None` should be `cond is not None`
-   --> app\routes.py:306:39
-    |
-304 |     states = (
-305 |         db.session.query(Organization.state)
-306 |         .filter(Organization.state != None)
-    |                                       ^^^^
-307 |         .distinct()
-308 |         .order_by(Organization.state)
-    |
-help: Replace with `cond is not None`
-
-E402 Module level import not at top of file
-   --> app\routes.py:435:1
-    |
-435 | import queue
-    | ^^^^^^^^^^^^
-    |
-
-E712 Avoid equality comparisons to `True`; use `Notification.is_duplicate:` for truth checks
-   --> app\routes.py:512:30
-    |
-510 |         db.func.sum(db.case((Notification.status == "Published", 1), else_=0)),
-511 |         db.func.sum(db.case((Notification.status == "Pending", 1), else_=0)),
-512 |         db.func.sum(db.case((Notification.is_duplicate == True, 1), else_=0)),
-    |                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-513 |     ).first()
-    |
-help: Replace with `Notification.is_duplicate`
-
 F541 [*] f-string without any placeholders
-   --> app\routes.py:618:9
+   --> app\scraper.py:373:19
     |
-617 |     log_to_workers(
-618 |         f"Bulk crawl request received. Queued 5 organizations in background.", "info"
-    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-619 |     )
-620 |     broadcast_status()
+372 |         if api_key:
+373 |             print(f"  [LLM] Attempting selector recovery via Gemini...")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+374 |             new_selectors = RealScraperEngine.llm_recover_selectors(html, org.name, api_key)
     |
 help: Remove extraneous `f` prefix
 
-E711 Comparison to `None` should be `cond is not None`
-   --> app\routes.py:918:76
-    |
-916 |     states = (
-917 |         db.session.query(Organization.state)
-918 |         .filter(Organization.category == category_f, Organization.state != None)
-    |                                                                            ^^^^
-919 |         .distinct()
-920 |         .order_by(Organization.state)
-    |
-help: Replace with `cond is not None`
-
-E711 Comparison to `None` should be `cond is not None`
-   --> app\routes.py:931:83
-    |
-929 |             db.session.query(Organization.college_type)
-930 |             .filter(
-931 |                 Organization.category == category_f, Organization.college_type != None
-    |                                                                                   ^^^^
-932 |             )
-933 |             .distinct()
-    |
-help: Replace with `cond is not None`
-
-E711 Comparison to `None` should be `cond is not None`
-    --> app\routes.py:1027:35
-     |
-1025 |         .filter(
-1026 |             Organization.category.in_(["college", "standalone", "university"]),
-1027 |             Organization.state != None,
-     |                                   ^^^^
-1028 |         )
-1029 |         .distinct()
-     |
-help: Replace with `cond is not None`
-
-E711 Comparison to `None` should be `cond is not None`
-    --> app\routes.py:1091:35
-     |
-1089 |         .filter(
-1090 |             Organization.category.in_(["college", "standalone", "university"]),
-1091 |             Organization.state != None,
-     |                                   ^^^^
-1092 |         )
-1093 |         .distinct()
-     |
-help: Replace with `cond is not None`
-
-E711 Comparison to `None` should be `cond is not None`
-    --> app\routes.py:1259:75
-     |
-1257 |     states = (
-1258 |         db.session.query(Organization.state)
-1259 |         .filter(Organization.category == "college", Organization.state != None)
-     |                                                                           ^^^^
-1260 |         .distinct()
-1261 |         .order_by(Organization.state)
-     |
-help: Replace with `cond is not None`
-
-E712 Avoid equality comparisons to `True`; use `Organization.is_tracked:` for truth checks
-    --> app\routes.py:1420:43
-     |
-1418 |             ids = [int(i) for i in task.target_query.split(",") if i.strip()]
-1419 |             orgs = Organization.query.filter(
-1420 |                 Organization.id.in_(ids), Organization.is_tracked == True
-     |                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-1421 |             ).all()
-1422 |         except Exception:
-     |
-help: Replace with `Organization.is_tracked`
-
-E712 Avoid equality comparisons to `False`; use `not Notification.is_duplicate:` for false checks
-   --> app\scraper.py:146:17
-    |
-144 |             Notification.query.filter(
-145 |                 Notification.organization_id == organization_id,
-146 |                 Notification.is_duplicate == False,
-    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-147 |             )
-148 |             .order_by(Notification.created_at.desc())
-    |
-help: Replace with `not Notification.is_duplicate`
-
-E712 Avoid equality comparisons to `False`; use `not Notification.is_duplicate:` for false checks
-   --> app\scraper.py:173:39
-    |
-171 |         # Also check cross-organization duplicates (e.g. CBSE and state news reporting the exact same title)
-172 |         cross_notifs = (
-173 |             Notification.query.filter(Notification.is_duplicate == False)
-    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-174 |             .order_by(Notification.created_at.desc())
-175 |             .limit(20)
-    |
-help: Replace with `not Notification.is_duplicate`
-
-F401 [*] `json` imported but unused
- --> app\workers.py:4:8
-  |
-2 | import queue
-3 | import time
-4 | import json
-  |        ^^^^
-5 | import traceback
-6 | import re
-  |
-help: Remove unused import: `json`
-
 F541 [*] f-string without any placeholders
-   --> app\workers.py:400:33
+   --> app\scraper.py:400:23
     |
-398 |                         if existing:
-399 |                             log_to_workers(
-400 |                                 f"Notice already exists in database. Skipping duplicate save.",
-    |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-401 |                                 "info",
-402 |                             )
+398 |                     )
+399 |             else:
+400 |                 print(f"  [LLM] LLM could not identify any notification selectors")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+401 |         else:
+402 |             print(
     |
 help: Remove extraneous `f` prefix
 
-E712 Avoid equality comparisons to `True`; use `Organization.is_tracked:` for truth checks
-   --> app\workers.py:694:37
+F541 [*] f-string without any placeholders
+   --> app\scraper.py:403:17
     |
-692 | …                         orgs = Organization.query.filter(
-693 | …                             Organization.id.in_(ids),
-694 | …                             Organization.is_tracked == True,
-    |                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-695 | …                         ).all()
-696 | …                     except Exception:
+401 |         else:
+402 |             print(
+403 |                 f"  [Scraper] No Gemini API key configured — skipping LLM recovery. "
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+404 |                 f"Set GEMINI_API_KEY in .env to enable adaptive recovery."
+405 |             )
     |
-help: Replace with `Organization.is_tracked`
+help: Remove extraneous `f` prefix
 
-Found 21 errors.
-[*] 6 fixable with the `--fix` option (14 hidden fixes can be enabled with the `--unsafe-fixes` option).
+F541 [*] f-string without any placeholders
+   --> app\scraper.py:404:17
+    |
+402 |             print(
+403 |                 f"  [Scraper] No Gemini API key configured — skipping LLM recovery. "
+404 |                 f"Set GEMINI_API_KEY in .env to enable adaptive recovery."
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+405 |             )
+    |
+help: Remove extraneous `f` prefix
+
+Found 4 errors.
+[*] 4 fixable with the `--fix` option.
 
 [6b] Coverage check...
 ----------------------------------------
@@ -381,8 +187,12 @@ Found 21 errors.
 
 [8/10] Final format application (black write)...
 ----------------------------------------
+reformatted E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\database.py
+reformatted E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\scraper.py
+reformatted E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\workers.py
+
 All done! ✨ 🍰 ✨
-7 files left unchanged.
+3 files reformatted, 5 files left unchanged.
   OK Black formatting applied successfully
 
 [9/10] Smoke import integrity check...
@@ -398,8 +208,8 @@ App modules imported successfully.
   [0] Source inventory:              SKIPPED
   [1] Cleanup and Preparation:        PASSED
   [2] Environment DB check:          PASSED
-  [3] Type Checking (mypy):          WARNING
-  [4] Black formatting check:        PASSED
+  [3] Type Checking (mypy):          PASSED
+  [4] Black formatting check:        WARNING
   [5] Linting (ruff):                WARNING
   [6] Testing:                        SKIPPED
   [6b] Coverage check:               SKIPPED
@@ -427,7 +237,7 @@ App modules imported successfully.
 [8/10] Final format application (black write)...
 ----------------------------------------
 All done! ✨ 🍰 ✨
-7 files left unchanged.
+8 files left unchanged.
   OK Black formatting applied successfully
 
 [9/10] Smoke import integrity check...
@@ -443,8 +253,8 @@ App modules imported successfully.
   [0] Source inventory:              SKIPPED
   [1] Cleanup and Preparation:        PASSED
   [2] Environment DB check:          PASSED
-  [3] Type Checking (mypy):          WARNING
-  [4] Black formatting check:        PASSED
+  [3] Type Checking (mypy):          PASSED
+  [4] Black formatting check:        WARNING
   [5] Linting (ruff):                WARNING
   [6] Testing:                        SKIPPED
   [6b] Coverage check:               SKIPPED
@@ -473,7 +283,7 @@ App modules imported successfully.
 [8/10] Final format application (black write)...
 ----------------------------------------
 All done! ✨ 🍰 ✨
-7 files left unchanged.
+8 files left unchanged.
   OK Black formatting applied successfully
 
 [9/10] Smoke import integrity check...
@@ -489,8 +299,8 @@ App modules imported successfully.
   [0] Source inventory:              SKIPPED
   [1] Cleanup and Preparation:        PASSED
   [2] Environment DB check:          PASSED
-  [3] Type Checking (mypy):          WARNING
-  [4] Black formatting check:        PASSED
+  [3] Type Checking (mypy):          PASSED
+  [4] Black formatting check:        WARNING
   [5] Linting (ruff):                WARNING
   [6] Testing:                        SKIPPED
   [6b] Coverage check:               SKIPPED
@@ -521,6 +331,8 @@ Requirement already satisfied: pandas==3.0.3 in .\venv\Lib\site-packages (from -
 Requirement already satisfied: openpyxl==3.1.5 in .\venv\Lib\site-packages (from -r requirements.txt (line 4)) (3.1.5)
 Requirement already satisfied: python-dotenv==1.0.1 in .\venv\Lib\site-packages (from -r requirements.txt (line 5)) (1.0.1)
 Requirement already satisfied: psycopg2-binary==2.9.10 in .\venv\Lib\site-packages (from -r requirements.txt (line 7)) (2.9.10)
+Requirement already satisfied: requests==2.32.3 in .\venv\Lib\site-packages (from -r requirements.txt (line 9)) (2.32.3)
+Requirement already satisfied: beautifulsoup4==4.12.3 in .\venv\Lib\site-packages (from -r requirements.txt (line 10)) (4.12.3)
 Requirement already satisfied: Werkzeug>=3.0.0 in .\venv\Lib\site-packages (from Flask==3.0.3->-r requirements.txt (line 1)) (3.1.8)
 Requirement already satisfied: Jinja2>=3.1.2 in .\venv\Lib\site-packages (from Flask==3.0.3->-r requirements.txt (line 1)) (3.1.6)
 Requirement already satisfied: itsdangerous>=2.1.2 in .\venv\Lib\site-packages (from Flask==3.0.3->-r requirements.txt (line 1)) (2.2.0)
@@ -531,6 +343,11 @@ Requirement already satisfied: numpy>=1.26.0 in .\venv\Lib\site-packages (from p
 Requirement already satisfied: python-dateutil>=2.8.2 in .\venv\Lib\site-packages (from pandas==3.0.3->-r requirements.txt (line 3)) (2.9.0.post0)
 Requirement already satisfied: tzdata in .\venv\Lib\site-packages (from pandas==3.0.3->-r requirements.txt (line 3)) (2026.2)
 Requirement already satisfied: et-xmlfile in .\venv\Lib\site-packages (from openpyxl==3.1.5->-r requirements.txt (line 4)) (2.0.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (3.4.7)
+Requirement already satisfied: idna<4,>=2.5 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (3.18)
+Requirement already satisfied: urllib3<3,>=1.21.1 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (2.7.0)
+Requirement already satisfied: certifi>=2017.4.17 in .\venv\Lib\site-packages (from requests==2.32.3->-r requirements.txt (line 9)) (2026.6.17)
+Requirement already satisfied: soupsieve>1.2 in .\venv\Lib\site-packages (from beautifulsoup4==4.12.3->-r requirements.txt (line 10)) (2.8.4)
 Requirement already satisfied: colorama in .\venv\Lib\site-packages (from click>=8.1.3->Flask==3.0.3->-r requirements.txt (line 1)) (0.4.6)
 Requirement already satisfied: MarkupSafe>=2.0 in .\venv\Lib\site-packages (from Jinja2>=3.1.2->Flask==3.0.3->-r requirements.txt (line 1)) (3.0.3)
 Requirement already satisfied: six>=1.5 in .\venv\Lib\site-packages (from python-dateutil>=2.8.2->pandas==3.0.3->-r requirements.txt (line 3)) (1.17.0)
@@ -544,79 +361,66 @@ Requirement already satisfied: typing-extensions>=4.6.0 in .\venv\Lib\site-packa
 
 [3/10] Type checking (mypy)...
 ----------------------------------------
-app\database.py:22: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:71: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:134: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:156: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:175: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:197: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:212: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:241: error: Name "db.Model" is not defined  [name-defined]
-app\database.py:264: error: Name "db.Model" is not defined  [name-defined]
-app\workers.py:21: error: Need type annotation for "scrape_queue"  [var-annotated]
-app\workers.py:22: error: Need type annotation for "scraped_queue"  [var-annotated]
-app\workers.py:29: error: Need type annotation for "sse_listeners" (hint: "sse_listeners: list[<type>] = ...")  [var-annotated]
-Found 12 errors in 2 files (checked 7 source files)
-   mypy detected type check warnings
+Success: no issues found in 8 source files
+  OK mypy type check passed
 
 [4/10] Formatting checks (black)...
 ----------------------------------------
-Terminate batch job (Y/N)?
-^CTraceback (most recent call last):
-  File "<frozen runpy>", line 189, in _run_module_as_main
-  File "<frozen runpy>", line 148, in _get_module_details
-  File "<frozen runpy>", line 112, in _get_module_details
-  File "src\black\__init__.py", line 15, in <module>
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\dataclasses.py", line 5, in <module>
-    import inspect
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\inspect.py", line 146, in <module>
-    import dis
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\dis.py", line 8, in <module>
-    from opcode import *
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 1019, in exec_module
-  File "<frozen importlib._bootstrap_external>", line 1132, in get_code
-  File "<frozen importlib._bootstrap_external>", line 1215, in get_data
-KeyboardInterrupt
-^CTerminate batch job (Y/N)?
-^C  OK black formatting check passed
+All done! ✨ 🍰 ✨
+8 files would be left unchanged.
+  OK black formatting check passed
 
 [5/10] Linting (ruff)...
 ----------------------------------------
-Terminate batch job (Y/N)?
-^CTraceback (most recent call last):
-  File "<frozen runpy>", line 198, in _run_module_as_main
-  File "<frozen runpy>", line 88, in _run_code
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\ruff\__main__.py", line 27, in <module>
-    _run()
-    ~~~~^^
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\ruff\__main__.py", line 10, in _run
-    ruff = find_ruff_bin()
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\ruff\_find_ruff.py", line 25, in find_ruff_bin
-    _matching_parents(_module_path(), "Lib/site-packages/ruff"), "Scripts"
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\ruff\_find_ruff.py", line 71, in _matching_parents
-    from fnmatch import fnmatch
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\fnmatch.py", line 14, in <module>
-    import re
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\re\__init__.py", line 125, in <module>
-    import enum
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\enum.py", line 3, in <module>
-    from functools import partial
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1322, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 1262, in _find_spec
-  File "<frozen importlib._bootstrap_external>", line 1556, in find_spec
-  File "<frozen importlib._bootstrap_external>", line 1530, in _get_spec
-  File "<frozen importlib._bootstrap_external>", line 1662, in find_spec
-  File "<frozen importlib._bootstrap_external>", line 166, in _path_isfile
-  File "<frozen importlib._bootstrap_external>", line 158, in _path_is_mode_type
-  File "<frozen importlib._bootstrap_external>", line 152, in _path_stat
-KeyboardInterrupt
-^CTerminate batch job (Y/N)?
-^C
+F541 [*] f-string without any placeholders
+   --> app\scraper.py:383:19
+    |
+382 |         if api_key:
+383 |             print(f"  [LLM] Attempting selector recovery via Gemini...")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+384 |             new_selectors = RealScraperEngine.llm_recover_selectors(
+385 |                 html, org.name, api_key
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> app\scraper.py:414:23
+    |
+412 |                     )
+413 |             else:
+414 |                 print(f"  [LLM] LLM could not identify any notification selectors")
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+415 |         else:
+416 |             print(
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> app\scraper.py:417:17
+    |
+415 |         else:
+416 |             print(
+417 |                 f"  [Scraper] No Gemini API key configured — skipping LLM recovery. "
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+418 |                 f"Set GEMINI_API_KEY in .env to enable adaptive recovery."
+419 |             )
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> app\scraper.py:418:17
+    |
+416 |             print(
+417 |                 f"  [Scraper] No Gemini API key configured — skipping LLM recovery. "
+418 |                 f"Set GEMINI_API_KEY in .env to enable adaptive recovery."
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+419 |             )
+    |
+help: Remove extraneous `f` prefix
+
+Found 4 errors.
+[*] 4 fixable with the `--fix` option.
+
 [6b] Coverage check...
 ----------------------------------------
   Skipped: no tests/ directory found
@@ -627,193 +431,131 @@ KeyboardInterrupt
 
 [8/10] Final format application (black write)...
 ----------------------------------------
-Fatal Python error: init_import_site: Failed to import the site module
-Python runtime state: initialized
-Traceback (most recent call last):
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap>", line 1176, in exec_module
-  File "<frozen site>", line 73, in <module>
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap>", line 1176, in exec_module
-  File "<frozen os>", line 29, in <module>
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap>", line 1176, in exec_module
-  File "<frozen _collections_abc>", line 120, in <module>
-  File "<frozen abc>", line 106, in __new__
-KeyboardInterrupt
-Terminate batch job (Y/N)?
-^C
+All done! ✨ 🍰 ✨
+8 files left unchanged.
+  OK Black formatting applied successfully
+
 [9/10] Smoke import integrity check...
 ----------------------------------------
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\app\__init__.py", line 1, in <module>
-    from flask import Flask
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\flask\__init__.py", line 5, in <module>
-    from . import json as json
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\flask\json\__init__.py", line 6, in <module>
-    from ..globals import current_app
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\flask\globals.py", line 6, in <module>
-    from werkzeug.local import LocalProxy
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\werkzeug\__init__.py", line 1, in <module>
-    from .serving import run_simple as run_simple
-  File "E:\ayan\contact360\docs\codebases\ideas\coleage_notification\venv\Lib\site-packages\werkzeug\serving.py", line 28, in <module>
-    from http.server import BaseHTTPRequestHandler
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\http\server.py", line 94, in <module>
-    import http.client
-  File "C:\Program Files\WindowsApps\PythonSoftwareFoundation.Python.3.13_3.13.3568.0_x64__qbz5n2kfra8p0\Lib\http\client.py", line 1470, in <module>
-    import ssl
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 1019, in exec_module
-  File "<frozen importlib._bootstrap_external>", line 1152, in get_code
-  File "<frozen importlib._bootstrap_external>", line 781, in _compile_bytecode
-KeyboardInterrupt
-^CTerminate batch job (Y/N)?
-^C  OK Import check passed
+App modules imported successfully.
+  OK Import check passed
 
 
 ========================================
-^CTerminate batch job (Y/N)?
-^C  SUMMARY
+  SUMMARY
 ========================================
 
   [0] Source inventory:              PASSED
   [1] Cleanup and Preparation:        PASSED
   [2] Environment DB check:          PASSED
-  [3] Type Checking (mypy):          WARNING
+  [3] Type Checking (mypy):          PASSED
   [4] Black formatting check:        PASSED
-  [5] Linting (ruff):                PASSED
-  [6] Testing:                        SKIPPED
-  [6b] Coverage check:               SKIPPED
-  [7] Best practices checklist:      PASSED
-  [8] Final Format application:      WARNING
-  [9] Build Verification (Import):   PASSED
-
-  X Found 2 error(s)
-^CTerminate batch job (Y/N)?
-^C  Found 4 warning(s)
-
-  Please fix the errors before proceeding.
-
-^C========================================
-Terminate batch job (Y/N)?
-^C  CHECK COMPLETE
-========================================
-
-
-^C[6/10] Running tests (pytest)...
-----------------------------------------
-
-[7/10] Best practices scored checklist...
-----------------------------------------
-^C  OK Best practices checklist verified
-
-[8/10] Final format application (black write)...
-----------------------------------------
-^CTerminate batch job (Y/N)?
-^C  OK Black formatting applied successfully
-
-[9/10] Smoke import integrity check...
-----------------------------------------
-^CTerminate batch job (Y/N)?
-^C  OK Import check passed
-
-
-========================================
-Terminate batch job (Y/N)? ^C
-^C  SUMMARY
-========================================
-
-  [0] Source inventory:              PASSED
-  [1] Cleanup and Preparation:        PASSED
-  [2] Environment DB check:          PASSED
-  [3] Type Checking (mypy):          WARNING
-  [4] Black formatting check:        PASSED
-  [5] Linting (ruff):                PASSED
+  [5] Linting (ruff):                WARNING
   [6] Testing:                        SKIPPED
   [6b] Coverage check:               SKIPPED
   [7] Best practices checklist:      PASSED
   [8] Final Format application:      PASSED
   [9] Build Verification (Import):   PASSED
-^C
-Terminate batch job (Y/N)?
-^C  X Found 2 error(s)
-  Found 4 warning(s)
+
+  X Found 2 error(s)
+  Found 3 warning(s)
 
   Please fix the errors before proceeding.
 
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^C========================================
+========================================
   CHECK COMPLETE
 ========================================
 
 
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^C[6b] Coverage check...
+[6/10] Running tests (pytest)...
+----------------------------------------
+
+[7/10] Best practices scored checklist...
+----------------------------------------
+  OK Best practices checklist verified
+
+[8/10] Final format application (black write)...
+----------------------------------------
+All done! ✨ 🍰 ✨
+8 files left unchanged.
+  OK Black formatting applied successfully
+
+[9/10] Smoke import integrity check...
+----------------------------------------
+App modules imported successfully.
+  OK Import check passed
+
+
+========================================
+  SUMMARY
+========================================
+
+  [0] Source inventory:              PASSED
+  [1] Cleanup and Preparation:        PASSED
+  [2] Environment DB check:          PASSED
+  [3] Type Checking (mypy):          PASSED
+  [4] Black formatting check:        PASSED
+  [5] Linting (ruff):                WARNING
+  [6] Testing:                        SKIPPED
+  [6b] Coverage check:               SKIPPED
+  [7] Best practices checklist:      PASSED
+  [8] Final Format application:      PASSED
+  [9] Build Verification (Import):   PASSED
+
+  X Found 2 error(s)
+  Found 3 warning(s)
+
+  Please fix the errors before proceeding.
+
+========================================
+  CHECK COMPLETE
+========================================
+
+
+[6b] Coverage check...
 ----------------------------------------
   Skipped: no tests/ directory found
 
 [7/10] Best practices scored checklist...
 ----------------------------------------
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^C  OK Best practices checklist verified
+  OK Best practices checklist verified
 
 [8/10] Final format application (black write)...
 ----------------------------------------
-^CTerminate batch job (Y/N)?
-^C  OK Black formatting applied successfully
+All done! ✨ 🍰 ✨
+8 files left unchanged.
+  OK Black formatting applied successfully
 
 [9/10] Smoke import integrity check...
 ----------------------------------------
-^CTerminate batch job (Y/N)?
-^C  OK Import check passed
+App modules imported successfully.
+  OK Import check passed
 
 
 ========================================
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)?
-^C  SUMMARY
+  SUMMARY
 ========================================
 
   [0] Source inventory:              PASSED
   [1] Cleanup and Preparation:        PASSED
   [2] Environment DB check:          PASSED
-  [3] Type Checking (mypy):          WARNING
+  [3] Type Checking (mypy):          PASSED
   [4] Black formatting check:        PASSED
-  [5] Linting (ruff):                PASSED
+  [5] Linting (ruff):                WARNING
   [6] Testing:                        SKIPPED
   [6b] Coverage check:               SKIPPED
   [7] Best practices checklist:      PASSED
   [8] Final Format application:      PASSED
   [9] Build Verification (Import):   PASSED
 
-^CTerminate batch job (Y/N)?
-^CTerminate batch job (Y/N)? ^C
   X Found 2 error(s)
-  Found 4 warning(s)
+  Found 3 warning(s)
 
   Please fix the errors before proceeding.
-^CTerminate batch job (Y/N)?
-^C
+
 ========================================
   CHECK COMPLETE
 ========================================
-^CTerminate batch job (Y/N)?
-^C
+
 
 E:\ayan\contact360\docs\codebases\ideas\coleage_notification>

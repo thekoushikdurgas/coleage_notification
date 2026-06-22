@@ -1,4 +1,4 @@
-from flask import Blueprint, current_app, Response
+from flask import Blueprint, Response
 from flask import render_template, request, redirect, url_for, flash, jsonify
 from app.database import (
     db,
@@ -12,12 +12,13 @@ from app.database import (
     ScheduledTaskRun,
     SystemSetting,
 )
-from app.scraper import ScraperEngine
 from app.ai_engine import AIEngine
+from app.settings_helper import get_setting, set_setting, get_all_settings, reset_all_settings, SETTING_DEFAULTS
 from datetime import datetime, timedelta
 import random
 import re
 import json
+import queue
 
 main_bp = Blueprint("main", __name__)
 
@@ -61,21 +62,58 @@ def dispatch_alerts(notification_id):
             matching_subs.append(sub)
 
     alerts_sent = 0
+    import json
+    from app.db_pusher import push_to_external_db
+
     for sub in matching_subs:
         # Parse channels
         channels = [ch.strip() for ch in sub.channels.split(",") if ch.strip()]
         for channel in channels:
-            # Create a delivery log
-            recipient = (
-                sub.email
-                if channel == "email" or channel == "push"
-                else (sub.phone or "Simulated Phone")
-            )
+            status = "success"
+            recipient = ""
+            
+            if channel == "db_push":
+                db_config = {}
+                if sub.push_db_config:
+                    try:
+                        db_config = json.loads(sub.push_db_config)
+                    except Exception:
+                        pass
+                
+                db_type = sub.push_db_type or "postgres"
+                host = db_config.get("host", "localhost")
+                port = db_config.get("port", "")
+                database = db_config.get("database", "")
+                recipient = f"{db_type.upper()}://{host}:{port}/{database}"
+                
+                try:
+                    payload = {
+                        "notification_id": notif.id,
+                        "title": notif.title,
+                        "category": notif.category,
+                        "body": notif.body,
+                        "organization_name": org.name,
+                        "state": org.state,
+                        "seo_url": content.seo_url if content else "",
+                        "meta_description": content.meta_description if content else "",
+                        "pushed_at": datetime.utcnow().isoformat()
+                    }
+                    push_to_external_db(db_type, db_config, payload)
+                except Exception as e:
+                    status = "failed"
+                    print(f"Failed to push alert to external DB: {e}")
+            else:
+                recipient = (
+                    sub.email
+                    if channel == "email" or channel == "push"
+                    else (sub.phone or "Simulated Phone")
+                )
+
             log = DeliveryLog(
                 notification_id=notif.id,
                 channel=channel,
                 recipient=recipient,
-                status="success",
+                status=status,
                 sent_at=datetime.utcnow(),
             )
             db.session.add(log)
@@ -90,21 +128,32 @@ def dispatch_alerts(notification_id):
         for sub in matching_subs:
             channels = [ch.strip() for ch in sub.channels.split(",") if ch.strip()]
             for channel in channels:
-                recipient = (
-                    sub.email
-                    if channel == "email" or channel == "push"
-                    else (sub.phone or "Simulated Phone")
-                )
-                msg_text = (
-                    content.meta_description if content else "Announcement posted!"
-                )
-                if content:
-                    if channel == "whatsapp":
-                        msg_text = content.whatsapp_message
-                    elif channel == "telegram":
-                        msg_text = content.telegram_message
-                    elif channel == "push":
-                        msg_text = content.push_notification
+                if channel == "db_push":
+                    db_config = {}
+                    if sub.push_db_config:
+                        try:
+                            db_config = json.loads(sub.push_db_config)
+                        except Exception:
+                            pass
+                    db_type = sub.push_db_type or "postgres"
+                    recipient = f"{db_type.upper()}://{db_config.get('host', 'localhost')}:{db_config.get('port', '')}/{db_config.get('database', '')}"
+                    msg_text = f"Pushed notification payload successfully to {db_type.upper()} table/index."
+                else:
+                    recipient = (
+                        sub.email
+                        if channel == "email" or channel == "push"
+                        else (sub.phone or "Simulated Phone")
+                    )
+                    msg_text = (
+                        content.meta_description if content else "Announcement posted!"
+                    )
+                    if content:
+                        if channel == "whatsapp":
+                            msg_text = content.whatsapp_message
+                        elif channel == "telegram":
+                            msg_text = content.telegram_message
+                        elif channel == "push":
+                            msg_text = content.push_notification
 
                 broadcast_sse(
                     "delivery_log",
@@ -157,7 +206,7 @@ def index():
             joinedload(Notification.organization),
             joinedload(Notification.generated_content),
         )
-        .filter(Notification.is_duplicate == False, Notification.status == "Published")
+        .filter(~Notification.is_duplicate, Notification.status == "Published")
     )
 
     # Apply filters
@@ -189,7 +238,7 @@ def index():
     # Fetch states and categories for filter dropdowns
     states = (
         db.session.query(Organization.state)
-        .filter(Organization.state != None)
+        .filter(Organization.state.isnot(None))
         .distinct()
         .order_by(Organization.state)
         .all()
@@ -239,7 +288,7 @@ def notification_detail(seo_url):
         .filter(
             Notification.id != notif.id,
             Notification.status == "Published",
-            Notification.is_duplicate == False,
+            ~Notification.is_duplicate,
             (Notification.category == notif.category)
             | (Organization.state == org.state),
         )
@@ -282,6 +331,21 @@ def subscribe():
             parsed_org_id = int(org_id)
 
         # Save subscription
+        push_db_type = None
+        push_db_config = None
+        if "db_push" in channels_list:
+            push_db_type = request.form.get("push_db_type")
+            db_config_dict = {
+                "host": request.form.get("push_db_host"),
+                "port": request.form.get("push_db_port"),
+                "database": request.form.get("push_db_name"),
+                "user": request.form.get("push_db_user"),
+                "password": request.form.get("push_db_password"),
+                "table_or_index": request.form.get("push_db_table_or_index"),
+                "ssl_mode": request.form.get("push_db_ssl_mode") or "disable"
+            }
+            push_db_config = json.dumps(db_config_dict)
+
         sub = Subscription(
             email=email,
             phone=phone,
@@ -289,6 +353,8 @@ def subscribe():
             state=state if state else None,
             category=category if category else None,
             channels=",".join(channels_list),
+            push_db_type=push_db_type,
+            push_db_config=push_db_config,
         )
 
         db.session.add(sub)
@@ -303,7 +369,7 @@ def subscribe():
     # GET Request: Renders the subscription form
     states = (
         db.session.query(Organization.state)
-        .filter(Organization.state != None)
+        .filter(Organization.state.isnot(None))
         .distinct()
         .order_by(Organization.state)
         .all()
@@ -330,6 +396,43 @@ def subscribe():
         boards=boards,
         regulators=regulators,
     )
+
+
+@main_bp.route("/test-db-connection", methods=["POST"])
+def test_db_connection():
+    """
+    AJAX API to test connection to an external database (PostgreSQL, Elasticsearch, OpenSearch).
+    """
+    from flask import jsonify
+    from app.db_pusher import verify_external_db_connection
+
+    db_type = request.form.get("db_type")
+    host = request.form.get("host")
+    port = request.form.get("port")
+    database = request.form.get("database")
+    user = request.form.get("user")
+    password = request.form.get("password")
+    table_or_index = request.form.get("table_or_index")
+    ssl_mode = request.form.get("ssl_mode") or "disable"
+
+    if not db_type or not host or not port or not database:
+        return jsonify({
+            "success": False,
+            "message": "Database Type, Host, Port, and Database/Index name are required fields."
+        })
+
+    config = {
+        "host": host,
+        "port": port,
+        "database": database,
+        "user": user,
+        "password": password,
+        "table_or_index": table_or_index,
+        "ssl_mode": ssl_mode
+    }
+
+    success, message = verify_external_db_connection(db_type, config)
+    return jsonify({"success": success, "message": message})
 
 
 @main_bp.route("/student-inbox")
@@ -432,9 +535,6 @@ def set_role(role):
     return redirect(request.referrer or url_for("main.index"))
 
 
-import queue
-
-
 @main_bp.route("/stream-events")
 @main_bp.route("/admin/stream-events")
 def admin_stream_events():
@@ -509,7 +609,7 @@ def admin_dashboard():
         db.func.count(Notification.id),
         db.func.sum(db.case((Notification.status == "Published", 1), else_=0)),
         db.func.sum(db.case((Notification.status == "Pending", 1), else_=0)),
-        db.func.sum(db.case((Notification.is_duplicate == True, 1), else_=0)),
+        db.func.sum(db.case((Notification.is_duplicate, 1), else_=0)),
     ).first()
 
     total_notifs = stats[0] or 0
@@ -615,7 +715,7 @@ def bulk_crawl():
         scrape_queue.put((org.id, None))
 
     log_to_workers(
-        f"Bulk crawl request received. Queued 5 organizations in background.", "info"
+        "Bulk crawl request received. Queued 5 organizations in background.", "info"
     )
     broadcast_status()
 
@@ -915,7 +1015,7 @@ def admin_colleges():
     # Get distinct states for filter
     states = (
         db.session.query(Organization.state)
-        .filter(Organization.category == category_f, Organization.state != None)
+        .filter(Organization.category == category_f, Organization.state.isnot(None))
         .distinct()
         .order_by(Organization.state)
         .all()
@@ -928,7 +1028,8 @@ def admin_colleges():
         types = (
             db.session.query(Organization.college_type)
             .filter(
-                Organization.category == category_f, Organization.college_type != None
+                Organization.category == category_f,
+                Organization.college_type.isnot(None),
             )
             .distinct()
             .order_by(Organization.college_type)
@@ -1024,7 +1125,7 @@ def admin_college_create():
         db.session.query(Organization.state)
         .filter(
             Organization.category.in_(["college", "standalone", "university"]),
-            Organization.state != None,
+            Organization.state.isnot(None),
         )
         .distinct()
         .order_by(Organization.state)
@@ -1088,7 +1189,7 @@ def admin_college_edit(org_id):
         db.session.query(Organization.state)
         .filter(
             Organization.category.in_(["college", "standalone", "university"]),
-            Organization.state != None,
+            Organization.state.isnot(None),
         )
         .distinct()
         .order_by(Organization.state)
@@ -1256,7 +1357,7 @@ def admin_tasks():
     # Fetch distinct states for the task creation dropdown
     states = (
         db.session.query(Organization.state)
-        .filter(Organization.category == "college", Organization.state != None)
+        .filter(Organization.category == "college", Organization.state.isnot(None))
         .distinct()
         .order_by(Organization.state)
         .all()
@@ -1417,7 +1518,7 @@ def admin_task_run(task_id):
         try:
             ids = [int(i) for i in task.target_query.split(",") if i.strip()]
             orgs = Organization.query.filter(
-                Organization.id.in_(ids), Organization.is_tracked == True
+                Organization.id.in_(ids), Organization.is_tracked
             ).all()
         except Exception:
             orgs = []
@@ -1620,3 +1721,95 @@ def admin_task_delete(task_id):
 
     flash(f"Task '{name}' has been deleted.", "info")
     return redirect(url_for("main.admin_tasks"))
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  SETTINGS PAGE — AI Provider Switching & Full Codebase Configuration
+# ══════════════════════════════════════════════════════════════════════════════
+
+
+@main_bp.route("/admin/settings")
+def admin_settings():
+    """
+    Renders the centralised settings page with all current configuration values.
+    """
+    settings = get_all_settings()
+    return render_template("settings.html", settings=settings)
+
+
+@main_bp.route("/admin/settings", methods=["POST"])
+def admin_settings_save():
+    """
+    Saves all settings submitted from the settings form.
+    """
+    # AI Provider
+    set_setting("ai_provider", request.form.get("ai_provider", "none"))
+
+    # Gemini
+    set_setting("gemini_api_key", request.form.get("gemini_api_key", ""))
+    set_setting("gemini_model", request.form.get("gemini_model", "gemini-2.5-flash"))
+
+    # Ollama
+    set_setting("ollama_host", request.form.get("ollama_host", "http://localhost:11434"))
+    set_setting("ollama_model", request.form.get("ollama_model", "gemma2"))
+
+    # Notification & content workflow (checkboxes: absent = 'false')
+    set_setting(
+        "auto_approve_notifications",
+        "true" if request.form.get("auto_approve_notifications") else "false",
+    )
+    set_setting(
+        "content_generation_enabled",
+        "true" if request.form.get("content_generation_enabled") else "false",
+    )
+    set_setting(
+        "alert_dispatch_enabled",
+        "true" if request.form.get("alert_dispatch_enabled") else "false",
+    )
+
+    # Scraper tuning
+    set_setting("scraper_timeout", request.form.get("scraper_timeout", "12"))
+    set_setting(
+        "scraper_user_agent",
+        request.form.get("scraper_user_agent", SETTING_DEFAULTS["scraper_user_agent"]),
+    )
+    set_setting(
+        "llm_html_char_limit", request.form.get("llm_html_char_limit", "18000")
+    )
+
+    flash("All settings saved successfully.", "success")
+    return redirect(url_for("main.admin_settings"))
+
+
+@main_bp.route("/admin/settings/reset", methods=["POST"])
+def admin_settings_reset():
+    """
+    Resets all settings to their defaults.
+    """
+    reset_all_settings()
+    flash("All settings have been reset to defaults.", "info")
+    return redirect(url_for("main.admin_settings"))
+
+
+@main_bp.route("/admin/settings/test-ollama", methods=["POST"])
+def admin_test_ollama():
+    """
+    AJAX: Tests connectivity to an Ollama instance and returns available models.
+    """
+    data = request.get_json(silent=True) or {}
+    host = data.get("host", "http://localhost:11434")
+    result = AIEngine.test_ollama_connection(host)
+    return jsonify(result)
+
+
+@main_bp.route("/admin/settings/test-gemini", methods=["POST"])
+def admin_test_gemini():
+    """
+    AJAX: Tests a Gemini API key validity.
+    """
+    data = request.get_json(silent=True) or {}
+    api_key = data.get("api_key", "")
+    if not api_key:
+        return jsonify({"success": False, "error": "No API key provided."})
+    result = AIEngine.test_gemini_connection(api_key)
+    return jsonify(result)

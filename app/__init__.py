@@ -17,8 +17,9 @@ def create_app(config_class=Config):
 
     # Ensure database schema has base_frequency column
     with app.app_context():
+        db.create_all()
+        
         try:
-            db.create_all()
             db.session.execute(
                 db.text(
                     "ALTER TABLE scheduled_tasks ADD COLUMN base_frequency VARCHAR(50)"
@@ -26,7 +27,27 @@ def create_app(config_class=Config):
             )
             db.session.commit()
         except Exception:
-            pass
+            db.session.rollback()
+
+        try:
+            db.session.execute(
+                db.text(
+                    "ALTER TABLE subscriptions ADD COLUMN push_db_type VARCHAR(50)"
+                )
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        try:
+            db.session.execute(
+                db.text(
+                    "ALTER TABLE subscriptions ADD COLUMN push_db_config TEXT"
+                )
+            )
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
     # Register routes blueprint
     from app.routes import main_bp

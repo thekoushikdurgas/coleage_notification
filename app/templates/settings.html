@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+
+{% block title %}System Settings | FormsADDA Control Center{% endblock %}
+
+{% block content %}
+<style>
+/* Settings Page Specific Styles */
+.settings-section-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #1a202c;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.settings-section-title i {
+    color: var(--primary);
+}
+
+/* AI Provider Cards */
+.provider-card {
+    border: 2px dashed #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    opacity: 0.7;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+.provider-card:hover {
+    transform: translateY(-4px);
+    opacity: 0.9;
+    border-color: #cbd5e1;
+}
+.provider-card.active {
+    opacity: 1;
+    transform: translateY(-4px);
+    border: 2px solid transparent;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+.provider-card.active::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border-radius: 18px;
+}
+.provider-card.active[data-provider="gemini"]::before {
+    background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+}
+.provider-card.active[data-provider="ollama"]::before {
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+}
+.provider-card.active[data-provider="none"]::before {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+}
+
+.provider-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+.provider-title {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #1a202c;
+}
+.provider-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+/* Hidden inputs */
+.provider-radio {
+    display: none;
+}
+
+/* Config Panels */
+.config-panel {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 0;
+}
+.config-panel.show {
+    max-height: 600px;
+    opacity: 1;
+    margin-top: 2rem;
+}
+
+/* Custom Toggle Switch */
+.switch-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #f1f5f9;
+}
+.switch-label {
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0;
+}
+.switch-desc {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: block;
+    margin-top: 4px;
+}
+
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: .3s;
+    border-radius: 34px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+input:checked + .slider {
+    background: linear-gradient(135deg, #2f4cdd, #8a4fff);
+}
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* Range Sliders */
+.custom-range::-webkit-slider-thumb {
+    background: var(--primary);
+}
+.custom-range::-moz-range-thumb {
+    background: var(--primary);
+}
+
+.card-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    border-radius: 16px;
+}
+.card-glass .card-header {
+    background: transparent;
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+}
+.card-glass .card-body {
+    padding: 1.5rem;
+}
+
+.actions-bar {
+    position: sticky;
+    bottom: 20px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 15px 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    border: 1px solid #f1f5f9;
+}
+</style>
+
+<div class="form-head d-flex mb-4 align-items-start">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">
+            <i class="flaticon-381-settings-2 text-primary mr-2"></i>System Settings
+        </h2>
+        <p class="mb-0 text-muted">Configure AI providers, scraper behavior, and global notification rules.</p>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('main.admin_settings_save') }}" id="settingsForm">
+    <!-- 1. AI Provider Selection -->
+    <div class="card card-glass mb-4">
+        <div class="card-header">
+            <h4 class="card-title" style="font-family:'Outfit',sans-serif;font-weight:700;">
+                <i class="fa-solid fa-brain text-primary mr-2"></i>AI Provider Selection
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label class="provider-card w-100 text-center {% if settings.ai_provider == 'gemini' %}active{% endif %}" data-provider="gemini">
+                        <input type="radio" name="ai_provider" value="gemini" class="provider-radio" {% if settings.ai_provider == 'gemini' %}checked{% endif %}>
+                        <div style="position:relative; z-index:1; background:#fff; height:100%; width:100%; border-radius:14px; padding:10px;">
+                            <div class="provider-icon">☁️</div>
+                            <h3 class="provider-title">Online AI (Gemini)</h3>
+                            <p class="provider-desc">Use Google's Gemini API for high-quality, scalable content generation.</p>
+                        </div>
+                    </label>
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label class="provider-card w-100 text-center {% if settings.ai_provider == 'ollama' %}active{% endif %}" data-provider="ollama">
+                        <input type="radio" name="ai_provider" value="ollama" class="provider-radio" {% if settings.ai_provider == 'ollama' %}checked{% endif %}>
+                        <div style="position:relative; z-index:1; background:#fff; height:100%; width:100%; border-radius:14px; padding:10px;">
+                            <div class="provider-icon">🖥️</div>
+                            <h3 class="provider-title">Local AI (Ollama)</h3>
+                            <p class="provider-desc">Run open-source models locally. Free, private, and customizable.</p>
+                        </div>
+                    </label>
+                </div>
+                <div class="col-md-4">
+                    <label class="provider-card w-100 text-center {% if settings.ai_provider == 'none' %}active{% endif %}" data-provider="none">
+                        <input type="radio" name="ai_provider" value="none" class="provider-radio" {% if settings.ai_provider == 'none' %}checked{% endif %}>
+                        <div style="position:relative; z-index:1; background:#fff; height:100%; width:100%; border-radius:14px; padding:10px;">
+                            <div class="provider-icon">📝</div>
+                            <h3 class="provider-title">Templates Only</h3>
+                            <p class="provider-desc">Disable AI. Use basic programmatic templates for all content.</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Gemini Config Panel -->
+            <div id="panel-gemini" class="config-panel {% if settings.ai_provider == 'gemini' %}show{% endif %}">
+                <div class="p-4" style="background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
+                    <h5 class="mb-3" style="font-weight:600;"><i class="fa-brands fa-google text-primary mr-2"></i>Gemini Settings</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold text-dark">API Key</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" name="gemini_api_key" id="geminiApiKey" value="{{ settings.gemini_api_key }}" placeholder="AIzaSy...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" id="toggleGeminiKey">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold text-dark">Model</label>
+                            <select class="form-control default-select" name="gemini_model">
+                                <option value="gemini-2.5-flash" {% if settings.gemini_model == 'gemini-2.5-flash' %}selected{% endif %}>Gemini 2.5 Flash (Fast)</option>
+                                <option value="gemini-1.5-pro" {% if settings.gemini_model == 'gemini-1.5-pro' %}selected{% endif %}>Gemini 1.5 Pro (Accurate)</option>
+                                <option value="gemini-1.5-flash" {% if settings.gemini_model == 'gemini-1.5-flash' %}selected{% endif %}>Gemini 1.5 Flash</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary btn-block" id="btnTestGemini">Test Connection</button>
+                        </div>
+                    </div>
+                    <div id="geminiTestResult" class="mt-2" style="display:none;"></div>
+                </div>
+            </div>
+
+            <!-- Ollama Config Panel -->
+            <div id="panel-ollama" class="config-panel {% if settings.ai_provider == 'ollama' %}show{% endif %}">
+                <div class="p-4" style="background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0;">
+                    <h5 class="mb-3" style="font-weight:600;"><i class="fa-solid fa-server text-success mr-2"></i>Ollama Settings</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label font-weight-bold text-dark">Host URL</label>
+                            <input type="text" class="form-control" name="ollama_host" id="ollamaHost" value="{{ settings.ollama_host }}" placeholder="http://localhost:11434">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label font-weight-bold text-dark">Selected Model</label>
+                            <select class="form-control default-select" name="ollama_model" id="ollamaModelSelect">
+                                <!-- Default options -->
+                                <option value="gemma2" {% if settings.ollama_model == 'gemma2' %}selected{% endif %}>gemma2</option>
+                                <option value="llama3.2" {% if settings.ollama_model == 'llama3.2' %}selected{% endif %}>llama3.2</option>
+                                <option value="mistral" {% if settings.ollama_model == 'mistral' %}selected{% endif %}>mistral</option>
+                                <option value="phi3" {% if settings.ollama_model == 'phi3' %}selected{% endif %}>phi3</option>
+                                <!-- If current model isn't in default list, add it -->
+                                {% if settings.ollama_model not in ['gemma2', 'llama3.2', 'mistral', 'phi3'] %}
+                                <option value="{{ settings.ollama_model }}" selected>{{ settings.ollama_model }}</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-success btn-block" id="btnTestOllama">Detect Models</button>
+                        </div>
+                    </div>
+                    <div id="ollamaTestResult" class="mt-2" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Scraper Configuration -->
+    <div class="card card-glass mb-4">
+        <div class="card-header">
+            <h4 class="card-title" style="font-family:'Outfit',sans-serif;font-weight:700;">
+                <i class="fa-solid fa-spider text-primary mr-2"></i>Scraper Configuration
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label font-weight-bold text-dark">HTTP Timeout: <span id="timeoutVal" class="text-primary">{{ settings.scraper_timeout }}</span> seconds</label>
+                    <input type="range" class="form-range custom-range w-100" name="scraper_timeout" id="timeoutRange" min="5" max="60" value="{{ settings.scraper_timeout }}">
+                    <small class="text-muted d-block mt-1">Maximum time to wait for a college website to respond.</small>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label class="form-label font-weight-bold text-dark">LLM HTML Char Limit: <span id="limitVal" class="text-primary">{{ settings.llm_html_char_limit }}</span></label>
+                    <input type="range" class="form-range custom-range w-100" name="llm_html_char_limit" id="limitRange" min="5000" max="50000" step="1000" value="{{ settings.llm_html_char_limit }}">
+                    <small class="text-muted d-block mt-1">Max characters sent to LLM for selector recovery (controls token cost).</small>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label font-weight-bold text-dark">User-Agent String</label>
+                    <input type="text" class="form-control" name="scraper_user_agent" value="{{ settings.scraper_user_agent }}">
+                    <small class="text-muted d-block mt-1">Identifies the crawler to target servers.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Notification & Content Workflows -->
+    <div class="card card-glass mb-4">
+        <div class="card-header">
+            <h4 class="card-title" style="font-family:'Outfit',sans-serif;font-weight:700;">
+                <i class="fa-solid fa-bell text-primary mr-2"></i>Workflow Rules
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="switch-wrapper">
+                        <div>
+                            <label class="switch-label">Auto-Approve</label>
+                            <span class="switch-desc">Publish directly without review</span>
+                        </div>
+                        <label class="custom-switch mb-0">
+                            <input type="checkbox" name="auto_approve_notifications" {% if settings.auto_approve_notifications == 'true' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="switch-wrapper">
+                        <div>
+                            <label class="switch-label">Content Generation</label>
+                            <span class="switch-desc">Run AI content generation</span>
+                        </div>
+                        <label class="custom-switch mb-0">
+                            <input type="checkbox" name="content_generation_enabled" {% if settings.content_generation_enabled == 'true' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="switch-wrapper">
+                        <div>
+                            <label class="switch-label">Alert Dispatch</label>
+                            <span class="switch-desc">Send emails/push to users</span>
+                        </div>
+                        <label class="custom-switch mb-0">
+                            <input type="checkbox" name="alert_dispatch_enabled" {% if settings.alert_dispatch_enabled == 'true' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions-bar d-flex justify-content-between align-items-center">
+        <div>
+            <span class="text-muted" style="font-size:0.85rem;"><i class="fa-solid fa-circle-info mr-1"></i>Settings take effect immediately.</span>
+        </div>
+        <div class="d-flex gap-2" style="gap: 10px;">
+            <a href="javascript:void(0)" onclick="document.getElementById('resetForm').submit();" class="btn btn-outline-danger font-weight-bold" style="border-radius:10px;">
+                <i class="fa-solid fa-rotate-left mr-2"></i>Reset
+            </a>
+            <button type="submit" class="btn btn-primary font-weight-bold px-4" style="background:linear-gradient(135deg,#2f4cdd,#8a4fff); border:none; border-radius:10px;">
+                <i class="fa-solid fa-floppy-disk mr-2"></i>Save Settings
+            </button>
+        </div>
+    </div>
+</form>
+
+<form id="resetForm" method="POST" action="{{ url_for('main.admin_settings_reset') }}" style="display:none;"></form>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Range Sliders
+    const timeoutRange = document.getElementById('timeoutRange');
+    const timeoutVal = document.getElementById('timeoutVal');
+    timeoutRange.addEventListener('input', (e) => { timeoutVal.textContent = e.target.value; });
+
+    const limitRange = document.getElementById('limitRange');
+    const limitVal = document.getElementById('limitVal');
+    limitRange.addEventListener('input', (e) => { limitVal.textContent = e.target.value; });
+
+    // AI Provider Toggle
+    const providerCards = document.querySelectorAll('.provider-card');
+    providerCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove active from all
+            providerCards.forEach(c => c.classList.remove('active'));
+            // Add active to clicked
+            this.classList.add('active');
+            
+            const provider = this.getAttribute('data-provider');
+            
+            // Toggle panels
+            document.getElementById('panel-gemini').classList.toggle('show', provider === 'gemini');
+            document.getElementById('panel-ollama').classList.toggle('show', provider === 'ollama');
+        });
+    });
+
+    // Toggle Gemini API Key Visibility
+    const toggleGeminiKey = document.getElementById('toggleGeminiKey');
+    const geminiApiKey = document.getElementById('geminiApiKey');
+    if (toggleGeminiKey && geminiApiKey) {
+        toggleGeminiKey.addEventListener('click', function() {
+            const type = geminiApiKey.getAttribute('type') === 'password' ? 'text' : 'password';
+            geminiApiKey.setAttribute('type', type);
+            this.innerHTML = type === 'password' ? '<i class="fa fa-eye"></i>' : '<i class="fa fa-eye-slash"></i>';
+        });
+    }
+
+    // Test Gemini Connection
+    const btnTestGemini = document.getElementById('btnTestGemini');
+    if (btnTestGemini) {
+        btnTestGemini.addEventListener('click', function() {
+            const apiKey = geminiApiKey.value;
+            const resDiv = document.getElementById('geminiTestResult');
+            const originalText = this.innerHTML;
+            
+            if (!apiKey) {
+                resDiv.innerHTML = '<div class="alert alert-warning py-2 mb-0">Please enter an API key first.</div>';
+                resDiv.style.display = 'block';
+                return;
+            }
+
+            this.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testing...';
+            this.disabled = true;
+
+            fetch("{{ url_for('main.admin_test_gemini') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ api_key: apiKey })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    resDiv.innerHTML = `<div class="alert alert-success py-2 mb-0"><i class="fa fa-check-circle mr-2"></i>${data.message}</div>`;
+                } else {
+                    resDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0"><i class="fa fa-times-circle mr-2"></i>${data.error}</div>`;
+                }
+                resDiv.style.display = 'block';
+            })
+            .catch(err => {
+                resDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0"><i class="fa fa-times-circle mr-2"></i>Network error.</div>`;
+                resDiv.style.display = 'block';
+            })
+            .finally(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    }
+
+    // Test Ollama Connection
+    const btnTestOllama = document.getElementById('btnTestOllama');
+    if (btnTestOllama) {
+        btnTestOllama.addEventListener('click', function() {
+            const host = document.getElementById('ollamaHost').value;
+            const resDiv = document.getElementById('ollamaTestResult');
+            const select = document.getElementById('ollamaModelSelect');
+            const originalText = this.innerHTML;
+
+            this.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Detecting...';
+            this.disabled = true;
+
+            fetch("{{ url_for('main.admin_test_ollama') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ host: host })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.success) {
+                    resDiv.innerHTML = `<div class="alert alert-success py-2 mb-0"><i class="fa fa-check-circle mr-2"></i>Connected! Found ${data.models.length} models.</div>`;
+                    
+                    // Update dropdown
+                    if (data.models.length > 0) {
+                        const currentVal = select.value;
+                        select.innerHTML = '';
+                        data.models.forEach(model => {
+                            const opt = document.createElement('option');
+                            opt.value = model;
+                            opt.textContent = model;
+                            if (model === currentVal) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                        // Re-initialize bootstrap-select if it exists
+                        if ($.fn.selectpicker) {
+                            $(select).selectpicker('refresh');
+                        }
+                    }
+                } else {
+                    resDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0"><i class="fa fa-times-circle mr-2"></i>${data.error}</div>`;
+                }
+                resDiv.style.display = 'block';
+            })
+            .catch(err => {
+                resDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0"><i class="fa fa-times-circle mr-2"></i>Network error testing host.</div>`;
+                resDiv.style.display = 'block';
+            })
+            .finally(() => {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -55,6 +55,11 @@ docker compose down -v
 
 docker compose build web && docker compose up web
 
+
+ssh -i "contact360app.pem" ubuntu@ec2-54-80-73-219.compute-1.amazonaws.com
+
+
+
 cd coleage_notification
 
 git pull

@@ -72,6 +72,17 @@
                 <h4 class="card-title">Configured Tasks</h4>
             </div>
             <div class="card-body">
+                {% if target_org %}
+                    <div class="alert alert-info d-flex justify-content-between align-items-center mb-3">
+                        <span>
+                            <i class="fa fa-info-circle mr-2"></i>
+                            Showing tasks targeting: <strong>{{ target_org.name }}</strong> (AISHE: {{ target_org.aishe_code }})
+                        </span>
+                        <a href="{{ url_for('main.admin_tasks') }}" class="btn btn-info btn-xs text-white">
+                            <i class="fa fa-times mr-1"></i> Clear Filter
+                        </a>
+                    </div>
+                {% endif %}
                 <div class="table-responsive">
                     <table class="table table-hover table-responsive-md">
                         <thead>

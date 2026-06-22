@@ -66,3 +66,12 @@ git branch -M main
 git add .
 git commit -m "coleage_notification deployment v1"
 git push -u origin main
+
+
+
+chmod +x scripts/setup_ec2.sh
+./scripts/setup_ec2.sh
+
+
+chmod +x scripts/setup_ec2.sh
+./scripts/setup_ec2.sh

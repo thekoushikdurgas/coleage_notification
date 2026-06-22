@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ college.name }} Details | FormsADDA Admin{% endblock %}
+
+{% block content %}
+<div class="form-head d-flex mb-3 align-items-start flex-column flex-md-row">
+    <div class="mr-auto">
+        <h2 class="text-black font-w600 mb-0" style="font-family:'Outfit',sans-serif;">College Details</h2>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-0" style="font-size:12px;">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.admin_dashboard') }}" style="color:#2f4cdd;font-weight:600;"><i class="fa fa-gauge-high mr-1"></i>Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.admin_colleges', category=college.category) }}" style="color:#2f4cdd;font-weight:600;">Registry</a></li>
+                <li class="breadcrumb-item active text-muted" aria-current="page">{{ college.name }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <a href="{{ url_for('main.admin_colleges', category=college.category) }}" class="btn btn-light border btn-sm" style="border-radius:8px; font-weight:600;"><i class="fa fa-arrow-left mr-1"></i> Back to Registry</a>
+    </div>
+</div>
+
+<!-- College Profile Section -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-8 border-right pr-lg-4">
+                        <small class="text-muted font-weight-bold uppercase" style="font-size:10px; letter-spacing:1px;">
+                            {{ college.category|upper }} PROFILE
+                        </small>
+                        <h3 class="text-black font-weight-bold mt-2 mb-1">{{ college.name }}</h3>
+                        <div class="mb-3">
+                            <span class="badge badge-light" style="font-family: monospace; font-size: 11px;">AISHE: {{ college.aishe_code }}</span>
+                            {% if college.is_tracked %}
+                                <span class="badge badge-success ml-1"><i class="fa fa-circle-play mr-1"></i> Tracked</span>
+                            {% else %}
+                                <span class="badge badge-warning ml-1"><i class="fa fa-circle-pause mr-1"></i> Not Tracked</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-sm-6 mb-3">
+                                <span class="text-muted d-block small">Website</span>
+                                {% if college.website %}
+                                    <a href="{{ college.website }}" target="_blank" class="text-primary font-weight-bold" style="text-decoration: underline;">
+                                        {{ college.website }} <i class="fa fa-external-link-alt small ml-1"></i>
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <span class="text-muted d-block small">Location</span>
+                                <span class="text-black font-weight-bold">
+                                    {{ college.district or 'N/A' }}, {{ college.state or 'N/A' }}
+                                </span>
+                                <small class="text-muted d-block">({{ college.location_type or 'N/A' }} area)</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 pl-lg-4 mt-4 mt-lg-0">
+                        <small class="text-muted font-weight-bold uppercase" style="font-size:10px; letter-spacing:1px;">
+                            REGISTRY CLASSIFICATION
+                        </small>
+                        <div class="mt-3">
+                            {% if college.category == 'college' %}
+                                <span class="text-muted d-block small">Affiliated University</span>
+                                <span class="text-black font-weight-bold d-block mb-3">{{ college.university_name or 'N/A' }}</span>
+                            {% endif %}
+                            
+                            <span class="text-muted d-block small">Institution Type / Management</span>
+                            <span class="text-black font-weight-bold d-block">{{ college.college_type or 'N/A' }}</span>
+                            <small class="text-muted d-block">{{ college.management or 'N/A' }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Metrics Row -->
+<div class="row">
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Crawl Success Rate</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ success_rate }}%</h3>
+                        <div class="progress" style="height: 6px; border-radius: 3px;">
+                            <div class="progress-bar bg-success" style="width: {{ success_rate }}%;" role="progressbar" aria-valuenow="{{ success_rate }}" aria-valuemin="0" aria-valuemax="100" aria-label="Crawl success rate: {{ success_rate }}%">
+                                <span class="sr-only">{{ success_rate }}% Success</span>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="p-3 rounded bg-success-light">
+                        <i class="la la-percentage text-success" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Total Crawls Run</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ total_crawls }}</h3>
+                        <small class="text-muted">{{ success_crawls }} success / {{ failed_crawls }} failed</small>
+                    </div>
+                    <span class="p-3 rounded bg-primary-light">
+                        <i class="la la-globe text-primary" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Notifications Loaded</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ total_notifications }}</h3>
+                        <small class="text-muted">Total notifications saved</small>
+                    </div>
+                    <span class="p-3 rounded bg-warning-light">
+                        <i class="la la-bell text-warning" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="media align-items-center">
+                    <div class="media-body mr-3">
+                        <p class="mb-1 text-muted" style="font-size: 13px;">Subscribers Active</p>
+                        <h3 class="text-black font-weight-bold mb-2">{{ total_subscriptions }}</h3>
+                        <small class="text-muted">Subscribed to this college</small>
+                    </div>
+                    <span class="p-3 rounded bg-secondary-light">
+                        <i class="la la-users text-secondary" style="font-size: 28px;"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Notifications Panel -->
+    <div class="col-xl-7 col-lg-7">
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Recent Notifications</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-responsive-md">
+                        <thead>
+                            <tr>
+                                <th><strong>Announcement Details</strong></th>
+                                <th><strong>Category</strong></th>
+                                <th><strong>Date</strong></th>
+                                <th><strong>Status</strong></th>
+                                <th><strong>Actions</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for notif in notifications %}
+                                <tr>
+                                    <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;" title="{{ notif.title }}">
+                                        {{ notif.title }}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ notif.category|badge_class }} badge-xs">
+                                            {{ notif.category }}
+                                        </span>
+                                    </td>
+                                    <td>{{ notif.created_at.strftime('%d %b, %H:%M') }}</td>
+                                    <td>
+                                        <span class="badge badge-{% if notif.status == 'Published' %}success{% elif notif.status == 'Duplicate' %}light{% else %}warning{% endif %} badge-xs">
+                                            {{ notif.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if notif.generated_content %}
+                                            <a href="{{ url_for('main.notification_detail', seo_url=notif.generated_content.seo_url) }}" class="btn btn-primary btn-xs" target="_blank">
+                                                <i class="fa fa-eye mr-1"></i> View
+                                            </a>
+                                        {% elif notif.source_url %}
+                                            <a href="{{ notif.source_url }}" class="btn btn-outline-secondary btn-xs" target="_blank">
+                                                <i class="fa fa-external-link-alt mr-1"></i> Source
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted small">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">No notifications loaded for this college yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Crawl Logs Panel -->
+    <div class="col-xl-5 col-lg-5">
+        <div class="card">
+            <div class="card-header border-0 pb-0">
+                <h4 class="card-title">Recent Crawl Activity</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><strong>Time</strong></th>
+                                <th><strong>Status</strong></th>
+                                <th><strong>Updates</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                                <tr>
+                                    <td>{{ log.crawled_at.strftime('%d %b, %H:%M') }}</td>
+                                    <td>
+                                        {% if log.status == 'success' %}
+                                            <span class="badge badge-success badge-xs"><i class="fa fa-check mr-1"></i> Success</span>
+                                        {% else %}
+                                            <span class="badge badge-danger badge-xs" title="{{ log.error_message }}"><i class="fa fa-times mr-1"></i> Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if log.detected_changes %}
+                                            <span class="badge badge-warning badge-xs">New Content</span>
+                                        {% else %}
+                                            <span class="text-muted small">No Changes</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-4">No crawl logs recorded yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -914,6 +914,48 @@ def admin_college_delete(org_id):
     return redirect(url_for('main.admin_colleges', category=category))
 
 
+@main_bp.route('/admin/colleges/details/<int:org_id>', methods=['GET'])
+def admin_college_details(org_id):
+    """
+    Renders detailed overview page for a specific college/organization.
+    """
+    college = Organization.query.get_or_404(org_id)
+    if college.category not in ['college', 'standalone', 'university']:
+        flash("Record is not a college, standalone, or university organization!", "error")
+        return redirect(url_for('main.admin_colleges'))
+        
+    # Calculate crawl stats
+    total_crawls = CrawlerLog.query.filter_by(organization_id=college.id).count()
+    success_crawls = CrawlerLog.query.filter_by(organization_id=college.id, status='success').count()
+    failed_crawls = CrawlerLog.query.filter_by(organization_id=college.id, status='failed').count()
+    success_rate = round((success_crawls / total_crawls * 100), 1) if total_crawls > 0 else 0.0
+    
+    # Get notifications
+    notifications = Notification.query.filter_by(organization_id=college.id).order_by(Notification.created_at.desc()).all()
+    total_notifications = len(notifications)
+    
+    # Get active subscriptions
+    subscriptions = Subscription.query.filter_by(organization_id=college.id).all()
+    total_subscriptions = len(subscriptions)
+    
+    # Get recent crawl activity logs
+    recent_logs = CrawlerLog.query.filter_by(organization_id=college.id).order_by(CrawlerLog.crawled_at.desc()).limit(20).all()
+    
+    return render_template(
+        'admin_college_details.html',
+        college=college,
+        total_crawls=total_crawls,
+        success_crawls=success_crawls,
+        failed_crawls=failed_crawls,
+        success_rate=success_rate,
+        notifications=notifications,
+        total_notifications=total_notifications,
+        subscriptions=subscriptions,
+        total_subscriptions=total_subscriptions,
+        recent_logs=recent_logs
+    )
+
+
 # --- Bulk Scraping & Scheduled Task Manager Routes ---
 
 def calculate_next_run(frequency, base_time=None):
@@ -991,11 +1033,42 @@ def admin_tasks():
     
     # Pre-filled selected college IDs from query parameter
     selected_ids = request.args.get('selected_ids', '').strip()
+    org_id = request.args.get('org_id', '').strip()
+    
+    if org_id and not selected_ids:
+        selected_ids = org_id
+        
     selected_colleges = []
     if selected_ids:
         try:
             ids = [int(i) for i in selected_ids.split(',') if i.strip()]
             selected_colleges = Organization.query.filter(Organization.id.in_(ids)).all()
+        except Exception:
+            pass
+            
+    # Filter tasks list if org_id is specified
+    target_org = None
+    if org_id:
+        try:
+            target_org = Organization.query.get(int(org_id))
+            if target_org:
+                filtered_tasks = []
+                for task in tasks:
+                    targets = False
+                    if task.target_type == 'all':
+                        targets = True
+                    elif task.target_type == 'state' and task.target_query == target_org.state:
+                        targets = True
+                    elif task.target_type == 'selected':
+                        try:
+                            ids = [int(i) for i in task.target_query.split(',') if i.strip()]
+                            if target_org.id in ids:
+                                targets = True
+                        except Exception:
+                            pass
+                    if targets:
+                        filtered_tasks.append(task)
+                tasks = filtered_tasks
         except Exception:
             pass
             
@@ -1007,7 +1080,8 @@ def admin_tasks():
         paused_tasks=paused_tasks,
         states=states,
         selected_colleges=selected_colleges,
-        selected_ids=selected_ids
+        selected_ids=selected_ids,
+        target_org=target_org
     )
 
 
